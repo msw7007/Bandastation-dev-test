@@ -268,3 +268,6 @@
 
 	/// Loot panel for the client
 	var/datum/lootpanel/loot_panel
+
+	/// Donation level
+	var/donator_level = 0

@@ -330,6 +330,9 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		reconnecting = TRUE
 		player_details = GLOB.player_details[ckey]
 		player_details.byond_version = full_version
+
+		process_result(src)
+
 	else
 		player_details = new(ckey)
 		player_details.byond_version = full_version

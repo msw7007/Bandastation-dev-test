@@ -13,6 +13,7 @@
 //#include "crawl_speed/_crawl_speed.dme" // Fixing floored melee brawl, or first steps to remove RP speed
 #include "cyrillic_fixes/_cyrillic_fixes.dme"
 #include "database220/_database220.dme"
+#include "donor/_donor.dme"
 #include "discord/_discord.dme"
 #include "emote_panel/_emote_panel.dme" // Waiting for upstream merge
 #include "events/_events.dme"
