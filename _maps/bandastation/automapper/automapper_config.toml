@@ -16,3 +16,20 @@
 # required_map = "MetaStation.dmm"
 # coordinates = [133, 182, 1]
 # trait_name = "Station"
+
+# Metastation Cryo Shuttle Arrival
+[templates.metastation_cryo_arrival]
+map_files = ["metastation_cryo_arrival.dmm"]
+directory = "_maps/bandastation/automapper/templates/metastation/"
+required_map = "MetaStation.dmm"
+coordinates = [44, 119, 1]
+trait_name = "Station"
+
+
+# Metastation Cryo Shuttle
+[templates.metastation_cryo_shuttle]
+map_files = ["metastation_cryo_shuttle.dmm"]
+directory = "_maps/bandastation/automapper/templates/metastation/"
+required_map = "MetaStation.dmm"
+coordinates = [44, 110, 1]
+trait_name = "Station"

@@ -1,0 +1,44 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"e" = (
+/obj/effect/turf_decal/trimline/dark_red/mid_joiner,
+/obj/effect/turf_decal/trimline/dark_red/line,
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/iron/white/smooth_half,
+/area/station/hallway/secondary/entry)
+"i" = (
+/turf/closed/wall,
+/area/station/hallway/secondary/entry)
+"C" = (
+/obj/structure/cable,
+/obj/machinery/door/airlock/public/glass{
+	name = "Cryopods"
+	},
+/obj/effect/landmark/navigate_destination,
+/turf/open/floor/iron/white,
+/area/station/hallway/secondary/entry)
+"I" = (
+/turf/open/space/basic,
+/area/space)
+"N" = (
+/obj/docking_port/stationary{
+	dir = 2;
+	dwidth = 11;
+	height = 24;
+	name = "SS13: Auxiliary Dock, Station-Port";
+	shuttle_id = "whiteship_home";
+	width = 35
+	},
+/turf/open/space/basic,
+/area/space)
+
+(1,1,1) = {"
+e
+C
+N
+"}
+(2,1,1) = {"
+e
+i
+I
+"}
