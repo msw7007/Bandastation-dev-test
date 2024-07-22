@@ -24,12 +24,3 @@ directory = "_maps/bandastation/automapper/templates/metastation/"
 required_map = "MetaStation.dmm"
 coordinates = [44, 119, 1]
 trait_name = "Station"
-
-
-# Metastation Cryo Shuttle
-[templates.metastation_cryo_shuttle]
-map_files = ["metastation_cryo_shuttle.dmm"]
-directory = "_maps/bandastation/automapper/templates/metastation/"
-required_map = "MetaStation.dmm"
-coordinates = [44, 110, 1]
-trait_name = "Station"

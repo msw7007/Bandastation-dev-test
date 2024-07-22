@@ -4,7 +4,7 @@
 /area/template_noop)
 "b" = (
 /obj/machinery/door/airlock/shuttle{
-	name = "Arrival Shuttle Airlock"
+	name = "Шлюз шаттла-такси"
 	},
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
@@ -13,8 +13,15 @@
 	dir = 4
 	},
 /obj/structure/fans/tiny,
+/obj/docking_port/mobile/cryo_shuttle{
+	dir = 4;
+	shuttle_id = "cryo_shuttle";
+	launch_status = 0;
+	name = "Мороз";
+	port_direction = 4
+},
 /turf/open/floor/iron/white,
-/area/shuttle/arrival)
+/area/shuttle/cryo_shuttle)
 "k" = (
 /obj/effect/turf_decal/tile/neutral/half{
 	dir = 8
