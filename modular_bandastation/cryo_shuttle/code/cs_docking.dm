@@ -29,16 +29,7 @@
 	mob.ckey = ""
 	qdel(mob)
 
-	var/datum/supply_order/order = new()
-	order.pack = new_crate
-	order.orderer = "Нанотрейзен" // Или имя игрока, если оно доступно
-	order.orderer_rank = "Automated"
-	order.orderer_ckey = "system"
-	order.reason = "Возвращение вещей ушедших со смены"
-	order.charge_on_purchase = FALSE
-	order.can_be_cancelled = FALSE
-
-	// Добавление заказа в список заказов
+	var/datum/supply_order/order = new(pack = new_crate,orderer = "Нанотрейзен",orderer_rank = "Automated",orderer_ckey = "system",reason = "Возвращение вещей ушедших со смены",charge_on_purchase = FALSE,can_be_cancelled = FALSE)
 	SSshuttle.shopping_list += order
 
 /obj/docking_port/mobile/arrivals/initiate_docking(obj/docking_port/stationary/S1, force=FALSE)
