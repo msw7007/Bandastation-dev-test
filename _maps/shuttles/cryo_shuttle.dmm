@@ -82,7 +82,7 @@
 /turf/open/floor/plating/airless,
 /area/shuttle/supply)
 "J" = (
-/obj/machinery/computer/emergency_shuttle,
+/obj/machinery/computer/shuttle/cryo_console_shuttle,
 /turf/open/floor/iron,
 /area/shuttle/supply)
 "L" = (

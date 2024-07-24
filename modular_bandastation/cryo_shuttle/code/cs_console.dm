@@ -1,15 +1,25 @@
-/obj/machinery/computer/shuttle/cryo_shuttle_console
-	name = "Cryo Shuttle Console"
+/obj/machinery/computer/shuttle/cryo_console
+	name = "Cryo Shuttle Call Console"
 	desc = "A console used to call the cryo shuttle."
 	icon = 'icons/obj/machines/wallmounts.dmi'
 	icon_state = "req_comp_off"
 	base_icon_state = "req_comp"
 	density = TRUE
-	active_power_usage = BASE_MACHINE_ACTIVE_CONSUMPTION * 0.15
+	active_power_usage = 0
 	max_integrity = 1500
 	armor_type = /datum/armor/machinery_cryo_shuttle_console
 	shuttleId = "cryo_shuttle"
-	possible_destinations = "commonmining_home;lavaland_common_away;landing_zone_dock;mining_public;cryo_shuttle"
+	possible_destinations = "cryo_shuttle;cryo_shuttle_deep"
+
+/obj/machinery/computer/shuttle/cryo_console_shuttle
+	name = "Cryo Shuttle Console"
+	desc = "A console used to launch the cryo shuttle."
+	density = TRUE
+	active_power_usage = 0
+	max_integrity = 1500
+	armor_type = /datum/armor/machinery_cryo_shuttle_console
+	shuttleId = "cryo_shuttle"
+	possible_destinations = "cryo_shuttle;cryo_shuttle_deep"
 
 /datum/armor/machinery_cryo_shuttle_console
 	melee = 90
@@ -22,4 +32,3 @@
 /obj/machinery/computer/shuttle/cryo_shuttle_console/Initialize(mapload)
 	. = ..()
 	find_and_hang_on_wall()
-

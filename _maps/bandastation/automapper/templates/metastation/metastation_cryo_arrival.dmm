@@ -1,7 +1,7 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "i" = (
 /turf/closed/wall,
-/obj/machinery/computer/shuttle/cryo_shuttle_console,
+/obj/machinery/computer/shuttle/cryo_console,
 /area/station/hallway/secondary/entry)
 "q" = (
 /obj/docking_port/stationary/cryo_shuttle{

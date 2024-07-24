@@ -3,6 +3,7 @@
 	who_can_purchase = null
 	suffix = "shuttle"
 	name = "СДС Шаттл Мороз"
+	var/in_deep_space = TRUE
 
 /obj/docking_port/mobile/cryo_shuttle
 	name = "cryo shuttle"
@@ -13,7 +14,6 @@
 /obj/docking_port/stationary/cryo_shuttle
 	name = "Стыковочный порт дальнего шатла"
 	shuttle_id = "cryo_shuttle"
-	roundstart_template = /datum/map_template/shuttle/cryo_shuttle
 
 /obj/docking_port/stationary/cryo_shuttle_deep
 	name = "Точка выхода с сектора"
