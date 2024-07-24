@@ -9,18 +9,10 @@
 # Traits - Station (for station relatied edits), CentCom (for edits on the CC map), Mining (for edits on Lavaland)
 # More can be found in code\__DEFINES\maps.dm
 
-# Metastation Cryo
-[templates.centcom_deep_space_cryo]
-map_files = ["centcom_cryo_dock.dmm"]
-directory = "_maps/bandastation/automapper/templates/centcom/"
-required_map = "builtin"
-coordinates = [128, 79, 1]
-trait_name = "CentCom"
-
 # Metastation Cryo Shuttle Arrival
 [templates.metastation_cryo_arrival]
 map_files = ["metastation_cryo_arrival.dmm"]
 directory = "_maps/bandastation/automapper/templates/metastation/"
 required_map = "MetaStation.dmm"
-coordinates = [44, 119, 1]
+coordinates = [52, 142, 1]
 trait_name = "Station"

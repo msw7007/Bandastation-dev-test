@@ -1,43 +1,11 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"i" = (
-/turf/closed/wall,
-/obj/machinery/computer/shuttle/cryo_console,
-/area/station/hallway/secondary/entry)
 "q" = (
-/obj/docking_port/stationary/cryo_shuttle{
+/obj/machinery/computer/shuttle/cryo_console{
 	dir = 1;
-	dheight = 4;
-	dwidth = 3;
-	height = 5;
-	width = 7;
-	},
-/turf/open/space/basic,
-/area/space)
-"C" = (
-/obj/structure/cable,
-/obj/machinery/door/airlock/public/glass{
-	name = "Cryopods"
-	},
-/obj/effect/landmark/navigate_destination,
-/turf/open/floor/iron/white,
+},
+/turf/closed/wall,
 /area/station/hallway/secondary/entry)
-"N" = (
-/obj/effect/turf_decal/trimline/dark_red/mid_joiner,
-/obj/effect/turf_decal/trimline/dark_red/line,
-/obj/structure/cable,
-/turf/open/floor/iron/white/smooth_half,
-/area/station/hallway/secondary/entry)
-"O" = (
-/turf/open/space/basic,
-/area/space)
 
 (1,1,1) = {"
-N
-C
 q
-"}
-(2,1,1) = {"
-N
-i
-O
 "}
