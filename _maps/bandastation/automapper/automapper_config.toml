@@ -11,8 +11,24 @@
 
 # Metastation Cryo Shuttle Arrival
 [templates.metastation_cryo_arrival]
-map_files = ["metastation_cryo_arrival.dmm"]
-directory = "_maps/bandastation/automapper/templates/metastation/"
+map_files = ["cryo_arrival.dmm"]
+directory = "_maps/bandastation/automapper/templates/cryo_all/"
 required_map = "MetaStation.dmm"
 coordinates = [52, 142, 1]
+trait_name = "Station"
+
+# Deltastation Cryo Shuttle Arrival
+[templates.deltastation_cryo_arrival]
+map_files = ["cryo_arrival.dmm"]
+directory = "_maps/bandastation/automapper/templates/cryo_all/"
+required_map = "DeltaStation2.dmm"
+coordinates = [157, 199, 1]
+trait_name = "Station"
+
+# IceBox Cryo Shuttle Arrival
+[templates.icebox_cryo_arrival]
+map_files = ["cryo_arrival.dmm"]
+directory = "_maps/bandastation/automapper/templates/cryo_all/"
+required_map = "IceBoxStation.dmm"
+coordinates = [48, 147, 3]
 trait_name = "Station"
