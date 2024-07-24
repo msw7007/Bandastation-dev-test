@@ -1,3 +1,4 @@
 #include "_cryo_shuttle.dm"
 #include "code\cs_shuttle.dm"
-#include "code\cs_console.dm"
+#include "code\cs_docking.dm"
+#include "code\cs_cargoing.dm"
