@@ -39,6 +39,7 @@
 #include "orderables/_orderables.dme"
 #include "automatic_crew_transfer/_automatic_crew_transfer.dme"
 #include "overrides/_overrides.dme"
+#include "spieces/_spieces.dme"
 
 
 // --- PRIME --- //
