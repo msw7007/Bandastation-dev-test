@@ -6,11 +6,11 @@
 	desc = "Вы обнюхиваете предмет и определяете, кто с ним взаимодействовал. Также, вы можете запомнить запах определённого человека, обнюхав его."
 	check_flags = AB_CHECK_IMMOBILE | AB_CHECK_CONSCIOUS | AB_CHECK_INCAPACITATED
 	cooldown_time = 2 SECONDS
-	button_icon = 'modular_bandastation/species/icons/mob/species/vulpkanin/skills.dmi'
+	button_icon = 'modular_bandastation/species/icons/mob/species/serpentid/skills.dmi'
 	button_icon_state = "sniff"
-	overlay_icon = 'modular_bandastation/species/icons/mob/species/vulpkanin/skills.dmi'
+	overlay_icon = 'modular_bandastation/species/icons/mob/species/serpentid/skills.dmi'
 	overlay_icon_state = "frame_border"
-	background_icon = 'modular_bandastation/species/icons/mob/species/vulpkanin/skills.dmi'
+	background_icon = 'modular_bandastation/species/icons/mob/species/serpentid/skills.dmi'
 	background_icon_state = "frame"
 	click_to_activate = TRUE
 	var/list/sniffed_species_ue = list()
@@ -19,11 +19,11 @@
 
 /datum/action/cooldown/sniff/Grant(mob/granted_to)
 	. = ..()
-	RegisterSignal(granted_to, COMSIG_CARBON_VULPKANIN_SNIFF, PROC_REF(smoke))
+	RegisterSignal(granted_to, COMSIG_CARBON_serpentid_SNIFF, PROC_REF(smoke))
 
 /datum/action/cooldown/sniff/Remove(mob/removed_from)
 	. = ..()
-	UnregisterSignal(removed_from, COMSIG_CARBON_VULPKANIN_SNIFF, PROC_REF(smoke))
+	UnregisterSignal(removed_from, COMSIG_CARBON_serpentid_SNIFF, PROC_REF(smoke))
 
 /datum/action/cooldown/sniff/proc/smoke()
 	StartCooldown(300 SECONDS)

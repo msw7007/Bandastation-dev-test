@@ -10,7 +10,7 @@
 	"ист","йеин","ентч","звич","тут","мирr","во","бис","эс","вор","ник","гро","эл","энем","зантх","тзч","ноч", \
 	"хел","исчт","фар","ва","барам","йеренг","теч","лач","сам","мак","лич","ген","ор","аг","ект","гек","стаг","онн", \
 	"бин","кет","ярл","вульф","эйнеч","кресвз","азунейн","гхчв")
-	icon = 'modular_bandastation/species/icons/mob/species/vulpkanin/lang.dmi'
+	icon = 'modular_bandastation/species/icons/mob/species/serpentid/lang.dmi'
 	icon_state = "vulptail"
 	default_priority = 90
 
@@ -30,7 +30,7 @@
 		return "[pick(GLOB.first_names_male_vulp)][random_name_spacer][pick(GLOB.last_names_vulp)]"
 	return "[pick(GLOB.first_names_female_vulp)][random_name_spacer][pick(GLOB.last_names_vulp)]"
 
-/datum/language_holder/vulpkanin
+/datum/language_holder/serpentid
 	understood_languages = list(
 		/datum/language/common = list(LANGUAGE_ATOM),
 		/datum/language/canilunzt = list(LANGUAGE_ATOM),

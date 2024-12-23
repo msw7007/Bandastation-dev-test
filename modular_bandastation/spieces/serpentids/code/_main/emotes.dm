@@ -12,14 +12,14 @@
 	else
 		return 'modular_bandastation/emote_panel/audio/male/sniff_male.ogg'
 
-// Vulpkanin
+// serpentid
 
-/datum/emote/living/carbon/human/vulpkanin/can_run_emote(mob/user, status_check = TRUE, intentional = FALSE)
+/datum/emote/living/carbon/human/serpentid/can_run_emote(mob/user, status_check = TRUE, intentional = FALSE)
 	var/organ = user.get_organ_slot(ORGAN_SLOT_TONGUE)
-	if(istype(organ, /obj/item/organ/tongue/vulpkanin))
+	if(istype(organ, /obj/item/organ/tongue/serpentid))
 		return ..()
 
-/datum/emote/living/carbon/human/vulpkanin/howl
+/datum/emote/living/carbon/human/serpentid/howl
 	name = "Выть"
 	key = "howl"
 	key_third_person = "howls"
@@ -30,7 +30,7 @@
 	cooldown = 6 SECONDS
 	sound = 'modular_bandastation/emote_panel/audio/howl.ogg'
 
-/datum/emote/living/carbon/human/vulpkanin/growl
+/datum/emote/living/carbon/human/serpentid/growl
 	name = "Рычать"
 	key = "growl"
 	key_third_person = "growls"
@@ -40,14 +40,14 @@
 	cooldown = 2 SECONDS
 	emote_type = EMOTE_AUDIBLE | EMOTE_VISIBLE
 
-/datum/emote/living/carbon/human/vulpkanin/growl/get_sound(mob/living/user)
+/datum/emote/living/carbon/human/serpentid/growl/get_sound(mob/living/user)
 	return pick(
 		'modular_bandastation/emote_panel/audio/growl1.ogg',
 		'modular_bandastation/emote_panel/audio/growl2.ogg',
 		'modular_bandastation/emote_panel/audio/growl3.ogg',
 	)
 
-/datum/emote/living/carbon/human/vulpkanin/purr
+/datum/emote/living/carbon/human/serpentid/purr
 	name = "Урчать"
 	key = "purr"
 	key_third_person = "purrs"
@@ -58,7 +58,7 @@
 	cooldown = 2 SECONDS
 	sound = 'modular_bandastation/emote_panel/audio/purr.ogg'
 
-/datum/emote/living/carbon/human/vulpkanin/bark
+/datum/emote/living/carbon/human/serpentid/bark
 	name = "Гавкнуть"
 	key = "bark"
 	key_third_person = "bark"
@@ -69,7 +69,7 @@
 	cooldown = 2 SECONDS
 	sound = 'modular_bandastation/emote_panel/audio/bark.ogg'
 
-/datum/emote/living/carbon/human/vulpkanin/wbark
+/datum/emote/living/carbon/human/serpentid/wbark
 	name = "Гавкнуть дважды"
 	key = "wbark"
 	key_third_person = "wbark"
