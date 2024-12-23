@@ -8,5 +8,5 @@
 
 /datum/chemical_reaction/slime/slimeserpentid
 	results = list(/datum/reagent/mutationtoxin/serpentid = 1)
-	required_reagents = list(/datum/reagent/cabbagilium = 5)
+	required_reagents = list(/datum/reagent/consumable/cabbagilium = 5)
 	required_container = /obj/item/slime_extract/green

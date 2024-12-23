@@ -12,8 +12,8 @@
 /datum/reagent/consumable/cabbagilium/on_mob_life(mob/living/carbon/affected_mob, seconds_per_tick, times_fired)
 	. = ..()
 	//Повышает настроение у Серпентидов и Молей
+	var/mob/living/carbon/human/affected_human = affected_mob
 	if(affected_mob.dna.species == SPECIES_SERPENTID || affected_mob.dna.species == SPECIES_MOTH)
-		affected_mob.mood.add_mood_event(MOOD_CATEGORY_SPECIFIC_FOOD, /datum/mood_event/oblivious)
+		affected_human.add_mood_event(MOOD_CATEGORY_SPECIFIC_FOOD, /datum/mood_event/oblivious)
 	if(affected_mob.dna.species == SPECIES_SERPENTID)
-		var/mob/living/carbon/human/affected_human = affected_mob
 		affected_human.adjust_nutrition(get_nutriment_factor(affected_mob) * REM * seconds_per_tick)
