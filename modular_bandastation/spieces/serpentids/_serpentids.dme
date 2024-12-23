@@ -1,8 +1,32 @@
 #include "_serpentids.dm"
 
+//Общие для расы дефайны
 #include "code/_define/_serps.dm"
 
+//Связанное с веществами и наукой
+#include "code/science/cabbage.dm"
+#include "code/science/mutation.dm"
+#include "code/science/design.dm"
+
+//Компоненты
+
+
+//Прочие механики
+//#include "code/_define/emotes.dm"
+//#include "code/_define/emotes_verbs.dm"
+//#include "code/_define/emotes_sniff.dm"
+//#include "code/_define/language.dm"
+
+//Внешние органы
+
+
+//Внутрение органы
 
 
 
+
+//Итог
+//#include "code/_define/serpentid.dm"
+
+//Основа
 #include "code/_main/serpentid.dm"
