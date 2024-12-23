@@ -12,32 +12,32 @@
 #include "code/components/organs_toxins.dm"
 
 //Внешние органы
-#include "code/organs/externals/blades.dm"
-#include "code/organs/externals/head.dm"
-#include "code/organs/externals/torso.dm"
-#include "code/organs/externals/tail.dm"
-#include "code/organs/externals/hands.dm"
-#include "code/organs/externals/legs.dm"
+//#include "code/organs/externals/blades.dm"
+//#include "code/organs/externals/head.dm"
+//#include "code/organs/externals/torso.dm"
+//#include "code/organs/externals/tail.dm"
+//#include "code/organs/externals/hands.dm"
+//#include "code/organs/externals/legs.dm"
 
 //Внутрение органы
-#include "code/organs/internals/brain.dm"
-#include "code/organs/internals/eyes.dm"
-#include "code/organs/internals/ears.dm"
-#include "code/organs/internals/heart.dm"
-#include "code/organs/internals/liver.dm"
-#include "code/organs/internals/lungs.dm"
-#include "code/organs/internals/stomach.dm"
-#include "code/organs/internals/appendix.dm"
+//#include "code/organs/internals/brain.dm"
+//#include "code/organs/internals/eyes.dm"
+//#include "code/organs/internals/ears.dm"
+//#include "code/organs/internals/heart.dm"
+//#include "code/organs/internals/liver.dm"
+//#include "code/organs/internals/lungs.dm"
+//#include "code/organs/internals/stomach.dm"
+//#include "code/organs/internals/appendix.dm"
+
+//Прочие механики
+//#include "code/_define/emotes.dm"
+//#include "code/_define/emotes_verbs.dm"
+//#include "code/_define/language.dm"
 
 //Основа
 //#include "code/serpentid.dm"
 
-//Прочие механики
-#include "code/_define/emotes.dm"
-#include "code/_define/emotes_verbs.dm"
-#include "code/_define/language.dm"
-
 //Связанное с веществами и наукой
 #include "code/science/cabbage.dm"
-#include "code/science/mutation.dm"
-#include "code/science/design.dm"
+//#include "code/science/mutation.dm"
+//#include "code/science/design.dm"

@@ -21,7 +21,7 @@
 	SIGNAL_HANDLER
 	if(isnull(organ.owner))
 		return TRUE
-	if(consuption_count && organ.owner.nutrition > NUTRITION_LEVEL_HYPOGLYCEMIA)
+	if(consuption_count && organ.owner.nutrition > NUTRITION_LEVEL_STARVING)
 		organ.owner.adjust_nutrition(-consuption_count)
 	else //Если количества недостаточно - выключить режим
 		organ.switch_mode(force_off = TRUE)
@@ -30,7 +30,3 @@
 /datum/component/hunger_organ/proc/hunger_change_consuption(holder, new_consuption_count)
 	SIGNAL_HANDLER
 	consuption_count = new_consuption_count
-
-//Переписываемый прок, который вызывается когда заканчивается запас химического препарата
-/obj/item/organ/internal/proc/switch_mode(force_off = FALSE)
-	return

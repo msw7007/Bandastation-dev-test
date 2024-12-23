@@ -22,7 +22,7 @@
 
 
 /datum/component/organ_action/proc/check_actions(mob/user)
-	return (organ.owner && organ.owner == user && organ.owner.stat != DEAD && (organ in organ.owner.internal_organs))
+	return (organ.owner && organ.owner == user && organ.owner.stat != DEAD && (organ in organ.owner.organs))
 
 //Прок, вызывается непосредственно в кнопке действия органа
 /datum/component/organ_action/proc/call_actions(mob/user)
@@ -32,8 +32,8 @@
 /datum/component/organ_action/proc/open_actions(mob/user)
 	var/list/choices = list()
 	var/list/organs_list = list()
-	for(var/obj/item/organ/internal/O in organ.owner.internal_organs)
-		if(length(O.actions_types) > 0 && !istype(O, /obj/item/organ/internal/cyberimp))
+	for(var/obj/item/organ/internal/O in organ.owner.organs)
+		if(length(O.actions_types) > 0 && !istype(O, /obj/item/organ/cyberimp))
 			organs_list += O
 
 	for(var/obj/item/organ/internal/I in organs_list)
@@ -59,8 +59,8 @@
 
 	var/list/organs_list = list()
 	if(organ.owner)
-		for(var/obj/item/organ/internal/O in organ.owner.internal_organs)
-			if(length(O.actions_types) > 0 && !istype(O, /obj/item/organ/internal/cyberimp))
+		for(var/obj/item/organ/internal/O in organ.owner.organs)
+			if(length(O.actions_types) > 0 && !istype(O, /obj/item/organ/cyberimp))
 				organs_list += O
 
 		for(var/obj/item/organ/internal/O in organs_list)
@@ -75,6 +75,3 @@
 						action_candidate.Grant(organ.owner)
 				break
 
-/obj/item/organ/internal
-	var/radial_action_state
-	var/radial_action_icon

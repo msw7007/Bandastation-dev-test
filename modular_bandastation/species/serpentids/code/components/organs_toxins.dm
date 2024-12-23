@@ -6,7 +6,7 @@
 #define TOX_ORGANS_PROCESS 1
 
 /datum/component/organ_toxin_damage
-	var/obj/item/organ/internal/organ = null
+	var/obj/item/organ/organ = null
 	var/toxin_damage_rate
 
 /datum/component/organ_toxin_damage/Initialize(tox_rate = TOX_ORGANS_PROCESS)
@@ -21,11 +21,19 @@
 
 /datum/component/organ_toxin_damage/proc/tox_handle_organ()
 	SIGNAL_HANDLER
+	if(!can_adjust_tox_loss(amount, forced, required_biotype))
+		return
+
+
+
+
+
+
 	if(organ.status & ORGAN_DEAD)
 		return
 	if(organ.owner?.get_damage_amount(TOX))
-		var/obj/item/organ/internal/liver/target_liver = organ.owner.get_int_organ(/obj/item/organ/internal/liver)
-		var/obj/item/organ/internal/kidneys/target_kidney = organ.owner.get_int_organ(/obj/item/organ/internal/kidneys)
+		var/obj/item/organ/liver/target_liver = organ.owner.get_int_organ(/obj/item/organ/internal/liver)
+		var/obj/item/organ/kidneys/target_kidney = organ.owner.get_int_organ(/obj/item/organ/internal/kidneys)
 
 		if(organ == target_kidney || organ == target_liver)
 			organ.receive_damage(organ.owner.get_damage_amount(TOX) * toxin_damage_rate, 1)
