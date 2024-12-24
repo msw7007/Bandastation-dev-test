@@ -8,6 +8,7 @@
 #include "code/components/ability_compact.dm"
 #include "code/components/ability_hunger.dm"
 #include "code/components/ability_liftweight.dm"
+#include "code/components/ability_heart_auto_defib.dm"
 #include "code/components/armor_carapace.dm"
 #include "code/components/armor_shell.dm"
 #include "code/components/organs_attack.dm"

@@ -158,17 +158,14 @@
 		last_time_action = world.time
 
 	//Потеря стелса при втором трешхолде
-	/*
 	var/obj/item/organ/internal/kidneys/serpentid/organ = H.get_int_organ("kidneys")
 	if(broken_stage >= 2)
 		if(istype(organ))
 			organ.switch_mode(force_off = TRUE)
-	*/
 
 //////////////////////////////////////////////////////////////////
 //					Хирургия для панциря						//
 //////////////////////////////////////////////////////////////////
-/*
 /datum/surgery/bone_repair/carapace_shell
 	name = "Carapace Integrity Repair"
 	steps = list(
@@ -233,7 +230,7 @@
 /datum/surgery/bone_repair/carapace_shell/can_start(mob/user, mob/living/carbon/target)
 	var/can_start = (SEND_SIGNAL(target, COMSIG_SURGERY_STOP) & SURGERY_STOP)
 	return can_start
-*/
+
 #undef CARAPACE_SHELL_ARMORED_BRUTE
 #undef CARAPACE_SHELL_ARMORED_BURN
 #undef CARAPACE_SHELL_BROKEN_BRUTE
