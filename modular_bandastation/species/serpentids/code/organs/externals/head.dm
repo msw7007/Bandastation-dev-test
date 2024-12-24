@@ -1,42 +1,41 @@
 /obj/item/bodypart/head/serpentid
 	icon_greyscale = 'modular_bandastation/species/icons/mob/species/serpentid/body.dmi'
-	limb_id = SPECIES_serpentid
+	limb_id = SPECIES_SERPENTID
 	is_dimorphic = TRUE
 	head_flags = HEAD_LIPS|HEAD_EYESPRITES|HEAD_EYECOLOR|HEAD_EYEHOLES|HEAD_DEBRAIN|HEAD_HAIR|HEAD_serpentid
-	species_bodytype = SPECIES_serpentid
+	species_bodytype = SPECIES_SERPENTID
 
-/obj/item/bodypart/chest/serpentid
-	icon_greyscale = 'modular_bandastation/species/icons/mob/species/serpentid/body.dmi'
-	limb_id = SPECIES_serpentid
-	is_dimorphic = TRUE
-	wing_types = list(/obj/item/organ/wings/functional/dragon)
-	species_bodytype = SPECIES_serpentid
+// Может и на оффы, но пока увы. Я не против, если этот код отправит на оффы КТО угодно.
+/obj/item/organ/external/head/carapace/replaced()
+	. = ..()
+	for(var/datum/action/action as anything in actions)
+		action.Grant(owner)
 
-/obj/item/bodypart/chest/serpentid/get_butt_sprite()
-	return BUTT_SPRITE_serpentid
+/obj/item/organ/external/head/carapace/droplimb()
+	. = ..()
+	for(var/X in actions)
+		var/datum/action/A = X
+		A.Remove(owner)
 
-/obj/item/bodypart/arm/left/serpentid
-	icon_greyscale = 'modular_bandastation/species/icons/mob/species/serpentid/body.dmi'
-	limb_id = SPECIES_serpentid
-	unarmed_attack_verbs = list("slash")
-	grappled_attack_verb = "lacerate"
-	unarmed_attack_effect = ATTACK_EFFECT_CLAW
-	unarmed_attack_sound = 'sound/items/weapons/slice.ogg'
-	unarmed_miss_sound = 'sound/items/weapons/slashmiss.ogg'
+/obj/item/organ/external/head/carapace
+	min_broken_damage = 30
+	encased = CARAPACE_ENCASE_WORD
+	actions_types = 		list(/datum/action/item_action/organ_action/toggle)
+	action_icon = 			list(/datum/action/item_action/organ_action/toggle = 'modular_ss220/species/serpentids/icons/organs.dmi')
+	action_icon_state = 	list(/datum/action/item_action/organ_action/toggle = "serpentid_eyes_0")
+	var/eye_shielded = FALSE
 
-/obj/item/bodypart/arm/right/serpentid
-	icon_greyscale = 'modular_bandastation/species/icons/mob/species/serpentid/body.dmi'
-	limb_id = SPECIES_serpentid
-	unarmed_attack_verbs = list("slash")
-	grappled_attack_verb = "lacerate"
-	unarmed_attack_effect = ATTACK_EFFECT_CLAW
-	unarmed_attack_sound = 'sound/items/weapons/slice.ogg'
-	unarmed_miss_sound = 'sound/items/weapons/slashmiss.ogg'
+/obj/item/organ/external/head/carapace/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/carapace, FALSE, min_broken_damage)
 
-/obj/item/bodypart/leg/left/serpentid
-	icon_greyscale = 'modular_bandastation/species/icons/mob/species/serpentid/body.dmi'
-	limb_id = SPECIES_serpentid
+/obj/item/organ/external/head/carapace/ui_action_click()
+	var/obj/item/organ/internal/eyes/E = owner.get_int_organ(/obj/item/organ/internal/eyes)
+	eye_shielded = !eye_shielded
+	E.flash_protect = eye_shielded ? FLASH_PROTECTION_WELDER : E::flash_protect
+	E.tint = eye_shielded ? FLASH_PROTECTION_WELDER : E::tint
+	owner.update_sight()
 
-/obj/item/bodypart/leg/right/serpentid
-	icon_greyscale = 'modular_bandastation/species/icons/mob/species/serpentid/body.dmi'
-	limb_id = SPECIES_serpentid
+	for(var/datum/action/item_action/T in actions)
+		T.button_overlay_icon_state ="serpentid_eyes_[eye_shielded]"
+		T.UpdateButtons()

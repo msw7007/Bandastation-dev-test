@@ -8,3 +8,5 @@
 
 /// Базовое время погрузки ящиков/мобов на куклу
 #define GADOM_BASIC_LOAD_TIMER 2 SECONDS
+
+#define BUTT_SPRITE_SERPTENTID "serp_butt"
