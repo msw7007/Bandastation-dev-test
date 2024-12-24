@@ -21,24 +21,20 @@
 
 /datum/component/organ_toxin_damage/proc/tox_handle_organ()
 	SIGNAL_HANDLER
-	if(!can_adjust_tox_loss(amount, forced, required_biotype))
+	if(organ.owner.stat == DEAD)
 		return
 
-
-
-
-
-
-	if(organ.status & ORGAN_DEAD)
+	if(organ.organ_flags & ORGAN_FAILING)
 		return
-	if(organ.owner?.get_damage_amount(TOX))
-		var/obj/item/organ/liver/target_liver = organ.owner.get_int_organ(/obj/item/organ/internal/liver)
-		var/obj/item/organ/kidneys/target_kidney = organ.owner.get_int_organ(/obj/item/organ/internal/kidneys)
 
-		if(organ == target_kidney || organ == target_liver)
-			organ.receive_damage(organ.owner.get_damage_amount(TOX) * toxin_damage_rate, 1)
-			organ.owner.adjustToxLoss(-1 * organ.owner.get_damage_amount(TOX) * toxin_damage_rate)
-		else if(target_liver.status == ORGAN_DEAD && target_kidney.status == ORGAN_DEAD)
-			organ.receive_damage(organ.owner.get_damage_amount(TOX) * toxin_damage_rate, 1)
+	if(organ.owner.getToxLoss())
+		var/obj/item/organ/liver/liver = organ.owner.organs_slot[ORGAN_SLOT_LIVER]
+		var/tox_damage = organ.owner.getToxLoss() * toxin_damage_rate
+
+		if(organ == liver)
+			organ.apply_organ_damage(tox_damage, required_organ_flag = ORGAN_ORGANIC)
+			organ.owner.heal_damage_type(tox_damage, damagetype = TOX)
+		else if(liver.organ_flags & ORGAN_FAILING)
+			organ.apply_organ_damage(tox_damage, required_organ_flag = ORGAN_ORGANIC)
 
 #undef TOX_ORGANS_PROCESS

@@ -2,6 +2,7 @@
 
 //Общие для расы дефайны
 #include "code/_define/_serps.dm"
+#include "code/_define/_alerts.dm"
 
 //Компоненты
 #include "code/components/ability_compact.dm"
@@ -29,13 +30,13 @@
 //#include "code/organs/internals/stomach.dm"
 //#include "code/organs/internals/appendix.dm"
 
+//Основа
+//#include "code/serpentid.dm"
+
 //Прочие механики
 //#include "code/_define/emotes.dm"
 //#include "code/_define/emotes_verbs.dm"
 //#include "code/_define/language.dm"
-
-//Основа
-//#include "code/serpentid.dm"
 
 //Связанное с веществами и наукой
 #include "code/science/cabbage.dm"

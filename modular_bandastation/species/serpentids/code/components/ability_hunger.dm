@@ -3,7 +3,7 @@
 */
 
 /datum/component/hunger_organ
-	var/obj/item/organ/internal/organ
+	var/obj/item/organ/organ
 	var/consuption_count = 0
 
 /datum/component/hunger_organ/Initialize(reagent_id)

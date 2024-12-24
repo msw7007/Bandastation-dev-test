@@ -3,7 +3,7 @@
 */
 
 /datum/component/organ_action
-	var/obj/item/organ/internal/organ
+	var/obj/item/organ/organ
 	var/radial_additive_state
 	var/radial_additive_icon
 
@@ -32,11 +32,11 @@
 /datum/component/organ_action/proc/open_actions(mob/user)
 	var/list/choices = list()
 	var/list/organs_list = list()
-	for(var/obj/item/organ/internal/O in organ.owner.organs)
+	for(var/obj/item/organ/O in organ.owner.organs)
 		if(length(O.actions_types) > 0 && !istype(O, /obj/item/organ/cyberimp))
 			organs_list += O
 
-	for(var/obj/item/organ/internal/I in organs_list)
+	for(var/obj/item/organ/I in organs_list)
 		if(I.radial_action_state && I.radial_action_icon)
 			choices["[I.name]"] = image(icon = I.radial_action_icon, icon_state = I.radial_action_state)
 
@@ -44,7 +44,7 @@
 	if(!check_actions(user))
 		return
 
-	var/obj/item/organ/internal/selected
+	var/obj/item/organ/selected
 	for(var/obj/item in organs_list)
 		if(item.name == choice)
 			selected = item
@@ -59,13 +59,13 @@
 
 	var/list/organs_list = list()
 	if(organ.owner)
-		for(var/obj/item/organ/internal/O in organ.owner.organs)
+		for(var/obj/item/organ/O in organ.owner.organs)
 			if(length(O.actions_types) > 0 && !istype(O, /obj/item/organ/cyberimp))
 				organs_list += O
 
-		for(var/obj/item/organ/internal/O in organs_list)
+		for(var/obj/item/organ/O in organs_list)
 			organs_list -= O
-			for(var/obj/item/organ/internal/D in organs_list)
+			for(var/obj/item/organ/D in organs_list)
 				var/datum/action/action_candidate = D.actions[1]
 				if(D != O)
 					if(action_candidate in organ.owner.actions)
