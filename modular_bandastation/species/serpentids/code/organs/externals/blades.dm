@@ -18,7 +18,6 @@
 	var/activation_in_progress = FALSE
 	unremovable = TRUE
 	emp_proof = TRUE
-
 /datum/action/item_action/organ_action/toggle/switch_blades
 	name = "Switch Threat Mode"
 	desc = "Switch your stance to show other your intentions"

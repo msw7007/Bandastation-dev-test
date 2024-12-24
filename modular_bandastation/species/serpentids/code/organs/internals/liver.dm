@@ -4,7 +4,7 @@
 	alcohol_tolerance = ALCOHOL_RATE * 2.5
 
 /// печень - вырабатывает глутамат натрия из нутриентов
-/obj/item/organ/internal/liver/serpentid
+/obj/item/organ/liver/serpentid
 	name = "chemical processor"
 	icon = 'modular_ss220/species/serpentids/icons/organs.dmi'
 	icon_state = "liver"
@@ -13,12 +13,11 @@
 	var/serp_production = 1
 	var/serp_consuption = 5
 
-/obj/item/organ/internal/liver/serpentid/Initialize(mapload)
+/obj/item/organ/liver/serpentid/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/organ_decay, 0.04, BASIC_RECOVER_VALUE)
 	AddComponent(/datum/component/organ_toxin_damage, 0.1)
 
-/obj/item/organ/internal/liver/serpentid/on_life()
+/obj/item/organ/liver/serpentid/on_life()
 	. = ..()
 	if(!owner)
 		return

@@ -1,9 +1,5 @@
-/obj/item/organ/kidneys/serpentid
-	name = "serpentid kidneys"
-	icon = 'modular_bandastation/species/icons/mob/species/serpentid/organs.dmi'
-
 /// почки - базовые c добавлением дикея, вырабатывают энзимы, которые позволяют ГБС скрываться
-/obj/item/organ/internal/kidneys/serpentid
+/obj/item/organ/kidneys/serpentid
 	name = "secreting organ"
 	icon = 'modular_ss220/species/serpentids/icons/organs.dmi'
 	icon_state = "kidneys"
@@ -16,14 +12,13 @@
 	radial_action_state = "serpentid_stealth"
 	radial_action_icon = 'modular_ss220/species/serpentids/icons/organs.dmi'
 
-/obj/item/organ/internal/kidneys/serpentid/Initialize(mapload)
+/obj/item/organ/kidneys/serpentid/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/organ_decay, 0.03, BASIC_RECOVER_VALUE)
 	AddComponent(/datum/component/organ_toxin_damage, 0.15)
 	AddComponent(/datum/component/hunger_organ)
 	AddComponent(/datum/component/organ_action, radial_action_state, radial_action_icon)
 
-/obj/item/organ/internal/kidneys/serpentid/on_life()
+/obj/item/organ/kidneys/serpentid/on_life()
 	. = .. ()
 	if((owner.m_intent != MOVE_INTENT_RUN || owner.body_position == LYING_DOWN || (world.time - owner.last_movement) >= 5) && (!owner.stat && (owner.mobility_flags & MOBILITY_STAND) && !owner.restrained() && cloak_engaged))
 		if(owner.invisibility != INVISIBILITY_LEVEL_TWO)
@@ -35,7 +30,7 @@
 	if(owner.alpha == 0)
 		owner.make_invisible()
 
-/obj/item/organ/internal/kidneys/serpentid/switch_mode(force_off = FALSE)
+/obj/item/organ/kidneys/serpentid/switch_mode(force_off = FALSE)
 	. = ..()
 	if(!force_off && owner?.nutrition >= NUTRITION_LEVEL_HYPOGLYCEMIA && !cloak_engaged && !(status & ORGAN_DEAD))
 		cloak_engaged = TRUE

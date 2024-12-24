@@ -1,3 +1,5 @@
 #include "_medical.dm"
 
 #include "code/surgery/vocal_cords.dm"
+#include "code/surgery/carapace_steps.dm"
+#include "code/surgery/carapace_operations.dm"

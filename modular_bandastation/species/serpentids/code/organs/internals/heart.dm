@@ -1,6 +1,6 @@
 /obj/item/organ/heart/serpentid
 	name = "double heart"
-	icon = 'modular_bandastation/species/serpentids/icons/organs.dmi'
+	icon = 'modular_bandastation/species/serpentids/icon/organs.dmi'
 	icon_state = "heart"
 	desc = "A pair of hearts."
 

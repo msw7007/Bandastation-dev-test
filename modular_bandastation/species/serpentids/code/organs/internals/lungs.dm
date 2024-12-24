@@ -8,7 +8,7 @@
 #define SERPENTID_HEAT_THRESHOLD_LEVEL_BASE 350
 #define SERPENTID_HEAT_THRESHOLD_LEVEL_UP 60
 
-/obj/item/organ/internal/lungs/serpentid
+/obj/item/organ/lungs/serpentid
 	name = "thacheal bag"
 	icon = 'modular_ss220/species/serpentids/icons/organs.dmi'
 	organ_datums = list(/datum/organ/lungs/serpentid)
@@ -27,9 +27,8 @@
 	radial_action_state = "ballon"
 	radial_action_icon = 'modular_ss220/species/serpentids/icons/organs.dmi'
 
-/obj/item/organ/internal/lungs/serpentid/Initialize(mapload)
+/obj/item/organ/lungs/serpentid/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/organ_decay, 0.05, BASIC_RECOVER_VALUE)
 	AddComponent(/datum/component/organ_toxin_damage, 0.05)
 	AddComponent(/datum/component/organ_action, radial_action_state, radial_action_icon)
 	AddComponent(/datum/component/hunger_organ)
@@ -54,7 +53,7 @@
 	heat_level_2_threshold = SERPENTID_HEAT_THRESHOLD_LEVEL_BASE + SERPENTID_HEAT_THRESHOLD_LEVEL_UP
 	heat_level_3_threshold = SERPENTID_HEAT_THRESHOLD_LEVEL_BASE + 2*SERPENTID_HEAT_THRESHOLD_LEVEL_UP
 
-/obj/item/organ/internal/lungs/serpentid/switch_mode(force_off = FALSE)
+/obj/item/organ/lungs/serpentid/switch_mode(force_off = FALSE)
 	. = ..()
 	if(!hand_active)
 		owner.internal = serpentid_vault
@@ -63,7 +62,7 @@
 		owner.internal = null
 		hand_active = FALSE
 
-/obj/item/organ/internal/lungs/serpentid/on_life()
+/obj/item/organ/lungs/serpentid/on_life()
 	. = ..()
 	if(!owner)
 		return
@@ -119,12 +118,12 @@
 
 //Без этого псевдо-баллон не работает (отрубается так как не проходит проверки основы)
 /mob/living/carbon/breathe(datum/gas_mixture/environment)
-	var/obj/item/organ/internal/lungs/lugns = null
-	for(var/obj/item/organ/internal/O in src.internal_organs)
-		if(istype(O, /obj/item/organ/internal/lungs))
+	var/obj/item/organ/lungs/lugns = null
+	for(var/obj/item/organ/O in src.internal_organs)
+		if(istype(O, /obj/item/organ/lungs))
 			lugns = O
-	if(istype(lugns, /obj/item/organ/internal/lungs/serpentid))
-		var/obj/item/organ/internal/lungs/serpentid/serpentid_lungs = lugns
+	if(istype(lugns, /obj/item/organ/lungs/serpentid))
+		var/obj/item/organ/lungs/serpentid/serpentid_lungs = lugns
 		if(src.internal == serpentid_lungs.serpentid_vault)
 			var/mob/living/carbon/human/puppet = src
 			var/breath = puppet.serpen_lugns(BREATH_VOLUME)
@@ -163,7 +162,7 @@
 	return atmo_value
 #undef QUANTIZE
 
-/obj/item/organ/internal/lungs/serpentid/proc/get_turf_air(turf/T)
+/obj/item/organ/lungs/serpentid/proc/get_turf_air(turf/T)
 	RETURN_TYPE(/datum/gas_mixture)
 	// This is one of two intended places to call this otherwise-unsafe proc.
 	var/datum/gas_mixture/bound_to_turf/air = T.private_unsafe_get_air()
@@ -216,7 +215,7 @@
 
 	return danger_zone
 
-/obj/item/organ/internal/lungs/serpentid/switch_mode(force_off = FALSE)
+/obj/item/organ/lungs/serpentid/switch_mode(force_off = FALSE)
 	. = ..()
 	if(!force_off && owner?.nutrition >= NUTRITION_LEVEL_HYPOGLYCEMIA && !(status & ORGAN_DEAD))
 		active_secretion = TRUE

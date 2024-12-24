@@ -4,7 +4,7 @@
 	icon = 'modular_bandastation/species/icons/mob/species/serpentid/organs.dmi'
 
 // Глаза - включают режим щитков, но очень уязвивым к вспышкам (в 2 раза сильнее молиных глаз)
-/obj/item/organ/internal/eyes/serpentid
+/obj/item/organ/eyes/serpentid
 	name = "visual sensor"
 	icon = 'modular_ss220/species/serpentids/icons/organs.dmi'
 	desc = "A large looking eyes with some chemical enchanments."
@@ -22,15 +22,14 @@
 	radial_action_state = "serpentid_nvg"
 	radial_action_icon = 'modular_ss220/species/serpentids/icons/organs.dmi'
 
-/obj/item/organ/internal/eyes/serpentid/Initialize(mapload)
+/obj/item/organ/eyes/serpentid/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/organ_decay, 0.04, BASIC_RECOVER_VALUE)
 	AddComponent(/datum/component/organ_toxin_damage, 0.02)
 	AddComponent(/datum/component/hunger_organ)
 	AddComponent(/datum/component/organ_action, radial_action_state, radial_action_icon)
 
 // Прок на получение цвета глаз
-/obj/item/organ/internal/eyes/serpentid/generate_icon(mob/living/carbon/human/HA)
+/obj/item/organ/eyes/serpentid/generate_icon(mob/living/carbon/human/HA)
 	if(!istype(HA))
 		HA = owner
 	var/icon/eyes_icon = new /icon(HA.dna.species.eyes_icon, HA.dna.species.eyes)
@@ -38,13 +37,13 @@
 
 	return eyes_icon
 
-/obj/item/organ/internal/eyes/serpentid/on_life()
+/obj/item/organ/eyes/serpentid/on_life()
 	. = ..()
 	if(owner)
 		var/mob/mob = owner
 		mob.update_client_colour(time = update_time_client_colour)
 
-/obj/item/organ/internal/eyes/serpentid/get_colourmatrix()
+/obj/item/organ/eyes/serpentid/get_colourmatrix()
 	if(!owner)
 		return
 	var/chem_value = (owner.nutrition - NUTRITION_LEVEL_STARVING)/NUTRITION_LEVEL_HUNGRY
@@ -59,7 +58,7 @@
 		vision_adjust, vision_adjust, vision_chem)
 	return vision_matrix
 
-/obj/item/organ/internal/eyes/serpentid/switch_mode(force_off = FALSE)
+/obj/item/organ/eyes/serpentid/switch_mode(force_off = FALSE)
 	. = ..()
 	if(!force_off && owner?.nutrition >= NUTRITION_LEVEL_HYPOGLYCEMIA && !(status & ORGAN_DEAD) && !active)
 		see_in_dark = 8
