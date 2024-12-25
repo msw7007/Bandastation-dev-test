@@ -16,18 +16,18 @@
 	unarmed_attack_sound = 'sound/items/weapons/slice.ogg'
 	unarmed_miss_sound = 'sound/items/weapons/slashmiss.ogg'
 
-/obj/item/organ/external/arm/carapace
+/obj/item/bodypart/arm/carapace
 	min_broken_damage = 20
 	encased = CARAPACE_ENCASE_WORD
 
-/obj/item/organ/external/arm/carapace/Initialize(mapload)
+/obj/item/bodypart/arm/carapace/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/carapace, TRUE, min_broken_damage)
 
-/obj/item/organ/external/arm/right/carapace
+/obj/item/bodypart/arm/right/carapace
 	min_broken_damage = 20
 	encased = CARAPACE_ENCASE_WORD
 
-/obj/item/organ/external/arm/right/carapace/Initialize(mapload)
+/obj/item/bodypart/arm/right/carapace/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/carapace, TRUE, min_broken_damage)

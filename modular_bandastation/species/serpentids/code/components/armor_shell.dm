@@ -1,65 +1,162 @@
 /*
-===Модуль панциря (карапаса)
-Цепляется на конечность. Особенность в том, что изначально придает конечности усиленную броню, но по достиженю трешхолда слома (устаналивается тут) конечность ломается
-
-Сломанная конечность увеличивает входящий по ней урон. Считает и брут и берн уроны. В случае получения берн урона процент урона переносится на органы.area
-
-Сопротивление/уязвимость к урону ожогами всегда ниже/выше сопротивления травмам.
-
-Панцирь блокирует стандартные операции, пока не будет сломан.
-
-Панцирь самовосстановится, если полностью вылечить конечность. Но есть параметр, который разрешает 100% или иное заживление при исцелении урона конечности.
+===Модуль хитина (карапаса)
+Цепляется на конечность (в идеале торс).area
+Опреедляет возможности тела серпентида, которые зависят от общего состояния хитина всех конечностей
 */
-//Базовый трешхолд урона, при достижение или выше которого будет слом.
-#define CARAPACE_BROKEN_STATE 20
-//Базовая уязвимость к урону травмами (0.8 = 80%)
-#define CARAPACE_BASIC_BRUTE_VULNERABILITY 0.8
-//Бонус к уязвимости ожогу относительно урона травм
-#define CARAPACE_ADDITIVE_BURN_VULNERABILITY 0.1
-//Функция на будущее - позволяет переносить проценты урона
-#define CARAPACE_DAMAGE_TRANSFER_PERCENTAGES 1
-//Вероятность восстановления конечности при достижении 0 урона
-#define CARAPACE_HEAL_BROKEN_PROB 50
-//Список операций, которые будут заблокированы пока панцирь не будет сломан
-#define CARAPACE_BLOCK_OPERATION list(/datum/surgery/bone_repair,/datum/surgery/bone_repair/skull,/datum/surgery/organ_manipulation)
-#define CARAPACE_ENCASE_WORD "chitin"
 
-/datum/component/carapace
-	var/self_mending = FALSE
-	var/broken_treshold = CARAPACE_BROKEN_STATE
+#define CARAPACE_SHELL_ARMORED_BRUTE 0.6
+#define CARAPACE_SHELL_ARMORED_BURN 0.8
+#define CARAPACE_SHELL_BROKEN_BRUTE 1
+#define CARAPACE_SHELL_BROKEN_BURN 1
 
-/datum/component/carapace/Initialize(allow_self_mending, break_threshold)
-	src.self_mending = allow_self_mending
-	src.broken_treshold = break_threshold
-	var/obj/item/organ/external/affected_limb = parent
-	affected_limb.encased = CARAPACE_ENCASE_WORD
+/datum/component/carapace_shell
+	var/mob/living/carbon/human/H
+	var/state_1_threshold
+	var/state_2_threshold
+	var/state_3_threshold
+	var/armored_cold_threshold
+	var/armored_heat_threshold
+	var/armored_temp_progression
+	var/self_repair_cooldown
+	var/broken_stage = 0
+	var/last_time_action = 0
 
-/datum/component/carapace/RegisterWithParent()
-	RegisterSignal(parent, COMSIG_LIMB_RECEIVE_DAMAGE, PROC_REF(receive_damage))
-	RegisterSignal(parent, COMSIG_LIMB_HEAL_DAMAGE, PROC_REF(heal_damage))
+/datum/component/carapace_shell/Initialize(mob/living/carbon/human/caller, treshold_1 = 30, treshold_2 = 60, treshold_3 = 90, threshold_cold = 0, threshold_heat = 400, temp_progression = 30, heal_cooldown = 10 MINUTES)
+	if(!istype(caller))
+		return
+	H = caller
 
-/datum/component/carapace/UnregisterFromParent()
-	UnregisterSignal(parent, COMSIG_LIMB_RECEIVE_DAMAGE)
-	UnregisterSignal(parent, COMSIG_LIMB_HEAL_DAMAGE)
+	state_1_threshold = treshold_1
+	state_2_threshold = treshold_2
+	state_3_threshold = treshold_3
+	armored_cold_threshold = threshold_cold
+	armored_heat_threshold = threshold_heat
+	armored_temp_progression = temp_progression
+	self_repair_cooldown = heal_cooldown
+	//Выдача настроек при иницилазации карапаса
+	stage_1_repair()
+	stage_2_repair()
+	stage_3_repair()
+	broken_stage = 0
 
-//Проки, срабатываемые при получении или исцелении урона
-/datum/component/carapace/proc/receive_damage(obj/item/organ/external/affected_limb, brute, burn, sharp, used_weapon = null, list/forbidden_limbs = list(), ignore_resists = FALSE, updating_health = TRUE)
+/datum/component/carapace_shell/RegisterWithParent()
+	RegisterSignal(H, COMSIG_LIVING_LIFE, PROC_REF(process_shell))
+	RegisterSignal(H, COMSIG_SURGERY_STOP, PROC_REF(check_surgery_perform))
+	RegisterSignal(H, COMSIG_SURGERY_REPAIR, PROC_REF(surgery_carapace_shell_repair))
+	RegisterSignal(H, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(update_attacked_time))
+
+/datum/component/carapace_shell/UnregisterFromParent()
+	UnregisterSignal(H, COMSIG_LIVING_LIFE)
+	UnregisterSignal(H, COMSIG_SURGERY_STOP)
+	UnregisterSignal(H, COMSIG_SURGERY_REPAIR)
+	UnregisterSignal(H, COMSIG_MOB_APPLY_DAMAGE)
+
+/datum/component/carapace_shell/proc/stage_1_break()
+	H.dna.species.brute_mod = CARAPACE_SHELL_BROKEN_BRUTE
+	H.dna.species.burn_mod = CARAPACE_SHELL_BROKEN_BURN
+	REMOVE_TRAIT(H, TRAIT_PIERCEIMMUNE, "carapace_state")
+	H.throw_alert("carapace_break", /atom/movable/screen/alert/carapace/break_armor)
+	broken_stage++
+
+/datum/component/carapace_shell/proc/stage_1_repair()
+	H.dna.species.brute_mod = CARAPACE_SHELL_ARMORED_BRUTE
+	H.dna.species.burn_mod = CARAPACE_SHELL_ARMORED_BURN
+	ADD_TRAIT(H, TRAIT_PIERCEIMMUNE, "carapace_state")
+	H.clear_alert("carapace_break")
+	broken_stage--
+
+/datum/component/carapace_shell/proc/stage_2_break()
+	H.throw_alert("carapace_break", /atom/movable/screen/alert/carapace/break_cloak)
+	broken_stage++
+
+/datum/component/carapace_shell/proc/stage_2_repair()
+	broken_stage--
+
+/datum/component/carapace_shell/proc/stage_3_break()
+	H.throw_alert("carapace_break", /atom/movable/screen/alert/carapace/break_rig)
+	H.dna.species.hazard_high_pressure = HAZARD_HIGH_PRESSURE
+	H.dna.species.warning_high_pressure = WARNING_HIGH_PRESSURE
+	H.dna.species.warning_low_pressure = WARNING_LOW_PRESSURE
+	H.dna.species.hazard_low_pressure = HAZARD_LOW_PRESSURE
+	H.dna.species.cold_level_1 = initial(H.dna.species.cold_level_1)
+	H.dna.species.cold_level_2 = H.dna.species.cold_level_1 - armored_temp_progression
+	H.dna.species.cold_level_3 = H.dna.species.cold_level_2 - armored_temp_progression
+	H.dna.species.heat_level_1 = initial(H.dna.species.heat_level_2)
+	H.dna.species.heat_level_2 = H.dna.species.heat_level_1 + armored_temp_progression
+	H.dna.species.heat_level_3 = H.dna.species.heat_level_2 + armored_temp_progression
+	broken_stage++
+
+/datum/component/carapace_shell/proc/stage_3_repair()
+	H.dna.species.hazard_high_pressure = INFINITY
+	H.dna.species.warning_high_pressure = INFINITY
+	H.dna.species.warning_low_pressure = -INFINITY
+	H.dna.species.hazard_low_pressure = -INFINITY
+	H.dna.species.cold_level_1 = armored_cold_threshold
+	H.dna.species.cold_level_2 = H.dna.species.cold_level_1 - armored_temp_progression
+	H.dna.species.cold_level_3 = H.dna.species.cold_level_2 - armored_temp_progression
+	H.dna.species.heat_level_1 = armored_heat_threshold
+	H.dna.species.heat_level_2 = H.dna.species.heat_level_1 + armored_temp_progression
+	H.dna.species.heat_level_3 = H.dna.species.heat_level_2 + armored_temp_progression
+
+	broken_stage--
+
+/datum/component/carapace_shell/proc/update_attacked_time()
 	SIGNAL_HANDLER
-	if(affected_limb.get_damage() > broken_treshold)
-		affected_limb.fracture()
-	if(length(affected_limb.internal_organs))
-		var/obj/item/organ/internal/O = pick(affected_limb.internal_organs)
-		O.receive_damage(burn * affected_limb.burn_dam)
+	last_time_action = world.time
 
-/datum/component/carapace/proc/heal_damage(obj/item/organ/external/affected_limb, brute, burn, internal = 0, robo_repair = 0, updating_health = TRUE)
+//Прок на запуск ремонта
+/datum/component/carapace_shell/proc/surgery_carapace_shell_repair()
 	SIGNAL_HANDLER
-	if((affected_limb.status & ORGAN_BROKEN) && affected_limb.get_damage() == 0)
-		if(self_mending || prob(CARAPACE_HEAL_BROKEN_PROB))
-			affected_limb.mend_fracture()
+	switch(broken_stage)
+		if(1)	stage_1_repair()
+		if(2)	stage_2_repair()
+		if(3)	stage_3_repair()
 
-#undef CARAPACE_BROKEN_STATE
-#undef CARAPACE_BASIC_BRUTE_VULNERABILITY
-#undef CARAPACE_ADDITIVE_BURN_VULNERABILITY
-#undef CARAPACE_DAMAGE_TRANSFER_PERCENTAGES
-#undef CARAPACE_HEAL_BROKEN_PROB
-#undef CARAPACE_BLOCK_OPERATION
+//Прок на проверку состояния панциря
+/datum/component/carapace_shell/proc/check_surgery_perform()
+	SIGNAL_HANDLER
+	var/character_damage = H.getBruteLoss() + H.getFireLoss()
+	var/can_perform = FALSE
+	if(broken_stage > 0)
+		can_perform = (broken_stage > 0 && character_damage < state_1_threshold) || (broken_stage > 1 && character_damage < state_2_threshold) || (broken_stage > 2 && character_damage < state_3_threshold)
+	return (can_perform ? SURGERY_STOP : FALSE)
+
+//Прок на обновление состояний панциря
+/datum/component/carapace_shell/proc/process_shell()
+	SIGNAL_HANDLER
+	var/character_damage = H.getBruteLoss() + H.getFireLoss()
+	var/can_self_repair = world.time - last_time_action > self_repair_cooldown
+	//Потеря брони при первом трешхолде
+	if(character_damage >= state_1_threshold)
+		if(broken_stage < 1)
+			stage_1_break()
+	else if(can_self_repair && broken_stage < 2)
+		stage_1_repair()
+		last_time_action = world.time
+
+	//Потеря стелса при втором трешхолде
+	if(character_damage >= state_2_threshold)
+		if(broken_stage < 2)
+			stage_2_break()
+	else if(can_self_repair && broken_stage < 3)
+		stage_2_repair()
+		last_time_action = world.time
+
+	//Потеря рига при третьем трешхолде
+	if(character_damage >= state_3_threshold)
+		if(broken_stage < 3)
+			stage_3_break()
+	else if(can_self_repair && broken_stage > 2)
+		stage_3_repair()
+		last_time_action = world.time
+
+	//Потеря стелса при втором трешхолде
+	var/obj/item/organ/internal/kidneys/serpentid/organ = H.get_int_organ("kidneys")
+	if(broken_stage >= 2)
+		if(istype(organ))
+			organ.switch_mode(force_off = TRUE)
+
+#undef CARAPACE_SHELL_ARMORED_BRUTE
+#undef CARAPACE_SHELL_ARMORED_BURN
+#undef CARAPACE_SHELL_BROKEN_BRUTE
+#undef CARAPACE_SHELL_BROKEN_BURN

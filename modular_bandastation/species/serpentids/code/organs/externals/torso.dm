@@ -16,15 +16,15 @@
 #define SERPENTID_ARMORED_HIGH_TEMP 400
 #define SERPENTID_ARMORED_STEP_TEMP 30
 
-/obj/item/organ/external/chest/carapace
+/obj/item/bodypart/chest/carapace
 	min_broken_damage = 40
 	encased = CARAPACE_ENCASE_WORD
 
-/obj/item/organ/external/chest/carapace/Initialize(mapload)
+/obj/item/bodypart/chest/carapace/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/carapace, FALSE, min_broken_damage)
 
-/obj/item/organ/external/chest/carapace/replaced()
+/obj/item/bodypart/chest/carapace/replaced()
 	. = ..()
 	AddComponent(/datum/component/carapace_shell, owner, treshold_1 = SERPENTID_ARMOR_THRESHOLD_1, treshold_2 = SERPENTID_ARMOR_THRESHOLD_2, treshold_3 = SERPENTID_ARMOR_THRESHOLD_3, threshold_cold = SERPENTID_ARMORED_LOW_TEMP, threshold_heat = SERPENTID_ARMORED_HIGH_TEMP, temp_progression = SERPENTID_ARMORED_STEP_TEMP)
 
@@ -37,10 +37,10 @@
 
 
 ///Хитиновые конечности - прочее
-/obj/item/organ/external/groin/carapace
+/obj/item/bodypart/groin/carapace
 	min_broken_damage = 40
 	encased = CARAPACE_ENCASE_WORD
 
-/obj/item/organ/external/groin/carapace/Initialize(mapload)
+/obj/item/bodypart/groin/carapace/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/carapace, FALSE, min_broken_damage)

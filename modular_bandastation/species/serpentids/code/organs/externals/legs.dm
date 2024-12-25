@@ -7,18 +7,18 @@
 	limb_id = SPECIES_SERPENTID
 
 
-/obj/item/organ/external/foot/carapace
+/obj/item/bodypart/foot/carapace
 	min_broken_damage = 20
 	encased = CARAPACE_ENCASE_WORD
 
-/obj/item/organ/external/foot/carapace/Initialize(mapload)
+/obj/item/bodypart/foot/carapace/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/carapace, TRUE, min_broken_damage)
 
-/obj/item/organ/external/foot/right/carapace
+/obj/item/bodypart/foot/right/carapace
 	min_broken_damage = 20
 	encased = CARAPACE_ENCASE_WORD
 
-/obj/item/organ/external/foot/right/carapace/Initialize(mapload)
+/obj/item/bodypart/foot/right/carapace/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/carapace, TRUE, min_broken_damage)

@@ -60,7 +60,7 @@
 		owner.overlays -= old_overlay
 	if(owner)
 		var/icon/blades_icon = new/icon("icon" = icon_file, "icon_state" = new_icon_state)
-		var/obj/item/organ/external/chest/torso = owner.get_limb_by_name("chest")
+		var/obj/item/bodypart/chest/torso = owner.get_limb_by_name("chest")
 		var/body_color = torso.s_col
 		blades_icon.Blend(body_color, ICON_ADD)
 		new_overlay = mutable_appearance(blades_icon)

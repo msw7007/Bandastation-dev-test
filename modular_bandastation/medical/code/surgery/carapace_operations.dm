@@ -1,70 +1,136 @@
 //////////////////////////////////////////////////////////////////
 //					Хирургия для панциря						//
 //////////////////////////////////////////////////////////////////
-/datum/surgery/bone_repair/carapace_shell
+/datum/surgery/carapace
+	name = "Parent Surgery"
+	possible_locs = list()
+
+/datum/surgery/carapace/break_shell
+	name = "Break carapace"
+	possible_locs = list(BODY_ZONE_CHEST, BODY_ZONE_HEAD, BODY_ZONE_PRECISE_GROIN, BODY_ZONE_PRECISE_EYES, BODY_ZONE_PRECISE_MOUTH, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_R_LEG, BODY_ZONE_L_LEG,)
+	steps = list(
+		/datum/surgery_step/saw,
+		/datum/surgery_step/incise,
+		/datum/surgery_step/retract_carapace
+	)
+
+/datum/surgery/carapace/shell_repair
 	name = "Carapace Integrity Repair"
 	steps = list(
 		/datum/surgery_step/saw,
+		/datum/surgery_step/incise,
 		/datum/surgery_step/retract_carapace,
-		/datum/surgery_step/set_bone,
-		/datum/surgery_step/finish_carapace,
-		/datum/surgery_step/cauterize
+		/datum/surgery_step/mend_carapace,
+		/datum/surgery_step/close
 	)
 	possible_locs = list(BODY_ZONE_CHEST)
-	requires_organic_bodypart = TRUE
 
-/datum/surgery_step/finish_carapace
-	name = "medicate carapace"
+/datum/surgery/carapace/gastrectomy
+	name = "Carapace gastrectomy"
+	surgery_flags = SURGERY_REQUIRE_RESTING | SURGERY_REQUIRE_LIMB | SURGERY_REQUIRES_REAL_LIMB
+	organ_to_manipulate = ORGAN_SLOT_STOMACH
+	steps = list(
+		/datum/surgery_step/saw,
+		/datum/surgery_step/clamp_bleeders,
+		/datum/surgery_step/incise,
+		/datum/surgery_step/gastrectomy,
+		/datum/surgery_step/clamp_bleeders,
+	)
+	possible_locs = list(BODY_ZONE_CHEST)
 
-	allowed_tools = list(
-		TOOL_BONEGEL = 100,
-		TOOL_SCREWDRIVER = 90
+/datum/surgery/carapace/coronary_bypass
+	name = "Carapace coronary bypass"
+	surgery_flags = SURGERY_REQUIRE_RESTING | SURGERY_REQUIRE_LIMB | SURGERY_REQUIRES_REAL_LIMB
+	organ_to_manipulate = ORGAN_SLOT_HEART
+	steps = list(
+		/datum/surgery_step/saw,
+		/datum/surgery_step/clamp_bleeders,
+		/datum/surgery_step/incise,
+		/datum/surgery_step/incise_heart,
+		/datum/surgery_step/coronary_bypass,
+	)
+	possible_locs = list(BODY_ZONE_CHEST)
+
+/datum/surgery/carapace/lobectomy
+	name = "Carapace lobectomy"
+	surgery_flags = SURGERY_REQUIRE_RESTING | SURGERY_REQUIRE_LIMB | SURGERY_REQUIRES_REAL_LIMB
+	organ_to_manipulate = ORGAN_SLOT_LUNGS
+	steps = list(
+		/datum/surgery_step/saw,
+		/datum/surgery_step/clamp_bleeders,
+		/datum/surgery_step/incise,
+		/datum/surgery_step/lobectomy,
+	)
+	possible_locs = list(BODY_ZONE_CHEST)
+
+/datum/surgery/carapace/hepatectomy
+	name = "Carapace hepatectomy"
+	surgery_flags = SURGERY_REQUIRE_RESTING | SURGERY_REQUIRE_LIMB | SURGERY_REQUIRES_REAL_LIMB
+	organ_to_manipulate = ORGAN_SLOT_LIVER
+	steps = list(
+		/datum/surgery_step/saw,
+		/datum/surgery_step/clamp_bleeders,
+		/datum/surgery_step/incise,
+		/datum/surgery_step/hepatectomy,
+	)
+	possible_locs = list(BODY_ZONE_CHEST)
+
+/datum/surgery/carapace/organ_manipulation
+	name = "Organ Manipulation"
+	steps = list(
+		/datum/surgery_step/saw,
+		/datum/surgery_step/clamp_bleeders,
+		/datum/surgery_step/incise,
+		/datum/surgery_step/manipulate_organs/internal,
+	)
+	possible_locs = list(BODY_ZONE_CHEST, BODY_ZONE_HEAD, BODY_ZONE_PRECISE_GROIN, BODY_ZONE_PRECISE_EYES, BODY_ZONE_PRECISE_MOUTH, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_R_LEG, BODY_ZONE_L_LEG,)
+
+/datum/surgery/carapace/revival
+	name = "Revival"
+	desc = "An experimental surgical procedure which involves reconstruction and reactivation of the patient's brain even long after death. \
+		The body must still be able to sustain life."
+	possible_locs = list(BODY_ZONE_CHEST)
+	target_mobtypes = list(/mob/living)
+	surgery_flags = SURGERY_REQUIRE_RESTING | SURGERY_MORBID_CURIOSITY
+	steps = list(
+		/datum/surgery_step/clamp_bleeders,
+		/datum/surgery_step/incise,
+		/datum/surgery_step/revive,
 	)
 
-	preop_sound = list(
-		TOOL_BONEGEL = 'sound/surgery/organ1.ogg',
-		/obj/item/screwdriver/power = 'sound/items/drill_hit.ogg',
-		/obj/item/screwdriver = 'sound/items/screwdriver.ogg'
+/datum/surgery/carapace/brain_surgery
+	name = "Brain surgery"
+	possible_locs = list(BODY_ZONE_HEAD)
+	steps = list(
+		/datum/surgery_step/clamp_bleeders,
+		/datum/surgery_step/fix_brain,
 	)
 
-	can_infect = TRUE
-	blood_level = SURGERY_BLOODSPREAD_HANDS
-
-	time = 2.4 SECONDS
-
-/datum/surgery_step/finish_carapace/begin_step(mob/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
-	var/obj/item/organ/external/affected = target.get_organ(target_zone)
-	user.visible_message(
-		"[user] starts to finish mending the damaged carapace in [target]'s [affected.name] with \the [tool].",
-		"You start to finish mending the damaged carapace in [target]'s [affected.name] with \the [tool].",
-		chat_message_type = MESSAGE_TYPE_COMBAT
+/datum/surgery/carapace/ear_surgery
+	name = "Ear surgery"
+	requires_bodypart_type = NONE
+	organ_to_manipulate = ORGAN_SLOT_EARS
+	possible_locs = list(BODY_ZONE_HEAD)
+	steps = list(
+		/datum/surgery_step/clamp_bleeders,
+		/datum/surgery_step/fix_ears,
 	)
-	return ..()
 
-/datum/surgery_step/finish_carapace/end_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool, datum/surgery/surgery)
-	var/obj/item/organ/external/affected = target.get_organ(target_zone)
-	user.visible_message(
-		"<span class='notice'>[user] has mended the damaged carapace in [target]'s [affected.name] with \the [tool].</span>",
-		"<span class='notice'>You have mended the damaged carapace in [target]'s [affected.name] with \the [tool].</span>",
-		chat_message_type = MESSAGE_TYPE_COMBAT
+/datum/surgery/carapace/eye_surgery
+	name = "Eye surgery"
+	requires_bodypart_type = NONE
+	organ_to_manipulate = ORGAN_SLOT_EYES
+	possible_locs = list(BODY_ZONE_PRECISE_EYES)
+	steps = list(
+		/datum/surgery_step/clamp_bleeders,
+		/datum/surgery_step/fix_eyes,
 	)
-	SEND_SIGNAL(target, COMSIG_SURGERY_REPAIR)
-	return SURGERY_STEP_CONTINUE
 
-/datum/surgery_step/finish_carapace/fail_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
-	var/obj/item/organ/external/affected = target.get_organ(target_zone)
-	user.visible_message(
-		"<span class='warning'>[user]'s hand slips, smearing [tool] in the incision in [target]'s [affected.name]!</span>",
-		"<span class='warning'>Your hand slips, smearing [tool] in the incision in [target]'s [affected.name]!</span>",
-		chat_message_type = MESSAGE_TYPE_COMBAT
+/datum/surgery/carapace/repair_shell
+	name = "Carapace Repair"
+	steps = list(
+		/datum/surgery_step/set_carapace,
+		/datum/surgery_step/mend_carapace,
+		/datum/surgery_step/close
 	)
-	return SURGERY_STEP_RETRY
-
-/datum/surgery/bone_repair/carapace_shell/can_start(mob/user, mob/living/carbon/target)
-	var/can_start = (SEND_SIGNAL(target, COMSIG_SURGERY_STOP) & SURGERY_STOP)
-	return can_start
-
-#undef CARAPACE_SHELL_ARMORED_BRUTE
-#undef CARAPACE_SHELL_ARMORED_BURN
-#undef CARAPACE_SHELL_BROKEN_BRUTE
-#undef CARAPACE_SHELL_BROKEN_BURN
+	possible_locs = list(BODY_ZONE_CHEST, BODY_ZONE_HEAD, BODY_ZONE_PRECISE_GROIN, BODY_ZONE_PRECISE_EYES, BODY_ZONE_PRECISE_MOUTH, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_R_LEG, BODY_ZONE_L_LEG,)
