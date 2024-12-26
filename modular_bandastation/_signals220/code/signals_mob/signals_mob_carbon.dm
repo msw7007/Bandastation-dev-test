@@ -8,9 +8,8 @@
 #define COMSIG_GADOM_UNLOAD "gadom_unload"
 // /datum/surgery_step/finish_carapace/end_step() : (/datum/component/carapace_shell)
 #define COMSIG_SURGERY_REPAIR "surgery_repair"
-// /datum/surgery/bone_repair/carapace_shell/can_start() : (/datum/component/carapace_shell)
-#define COMSIG_SURGERY_STOP "surgery_stop"
-	#define SURGERY_STOP (1<<0)
+// /datum/surgery_step/finish_carapace/end_step() : (/datum/component/carapace_shell)
+#define COMSIG_HAVE_CARAPACE "have_carapace"
 
 /mob/living/carbon/human/mouse_drop_receive(atom/movable/AM, mob/user)
 	if(SEND_SIGNAL(usr, COMSIG_GADOM_CAN_GRAB) & GADOM_CAN_GRAB)

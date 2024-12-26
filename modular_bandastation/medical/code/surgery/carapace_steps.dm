@@ -64,7 +64,7 @@
 			span_notice("[user] successfully resets the carapace in [target]'s [target.parse_zone_with_bodypart(target_zone)]!"),
 		)
 		log_combat(user, target, "reset a compound fracture in", addition="COMBAT MODE: [uppertext(user.combat_mode)]")
-		SEND_SIGNAL(target, COMSIG_SURGERY_MEND_CARAPACE)
+		SEND_SIGNAL(target, COMSIG_SURGERY_REPAIR)
 	else
 		to_chat(user, span_warning("[target] has no compound fracture there!"))
 	return ..()
