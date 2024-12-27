@@ -18,8 +18,6 @@
 	base_treat_time = 5 SECONDS
 	wound_flags = MANGLES_INTERIOR
 
-	// Насколько увеличивается входящий по кукле урон на этом уровне травмы
-	var/carapace_damage_mult
 	// Сколько урона должна получить кукла, чтобы заработать данную травму
 	var/carapace_damage_value
 	// Какие трейты убирает/добавляет состояние травмы

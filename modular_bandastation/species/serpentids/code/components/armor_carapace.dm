@@ -36,6 +36,7 @@
 
 /datum/component/carapace
 	var/self_mending = FALSE
+	var/carapace_damage_mult = 1
 
 /datum/component/carapace/Initialize(allow_self_mending, break_threshold)
 	src.self_mending = allow_self_mending

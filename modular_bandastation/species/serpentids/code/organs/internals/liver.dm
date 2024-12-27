@@ -8,4 +8,4 @@
 
 /obj/item/organ/liver/serpentid/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/organ_toxin_damage, tox_mult_damage = 0.5, tox_rate = 0.1)
+	AddComponent(/datum/component/organ_toxin_damage, 0.1, 0.5)

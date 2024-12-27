@@ -1,8 +1,3 @@
-
-/obj/item/organ/eyes/serpentid
-	name = "serpentid eyeballs"
-	icon = 'modular_bandastation/species/icons/mob/species/serpentid/organs.dmi'
-
 // Глаза - включают режим щитков, но очень уязвивым к вспышкам (в 2 раза сильнее молиных глаз)
 /obj/item/organ/eyes/serpentid
 	name = "visual sensor"

@@ -28,7 +28,6 @@
 #include "code/organs/internals/ears.dm"
 #include "code/organs/internals/heart.dm"
 #include "code/organs/internals/liver.dm"
-#include "code/organs/internals/kidneys.dm"
 #include "code/organs/internals/lungs.dm"
 #include "code/organs/internals/stomach.dm"
 #include "code/organs/internals/appendix.dm"
