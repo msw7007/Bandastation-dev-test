@@ -1,4 +1,4 @@
-/datum/modpack/spieces/serprentids
-	name = "serpentids"
-	desc = "Новая раса для 2д-космонавтиков"
-	author = "KageIIte"
+/datum/modpack/species
+	name = "Species"
+	desc = "Добавление архитектуры для новых видов и конфигурирования существующих."
+	author = "nlaysi, Podvaldeda"
