@@ -7,7 +7,7 @@
 	flags = TONGUELESS_SPEECH | LANGUAGE_HIDE_ICON_IF_NOT_UNDERSTOOD
 	space_chance = 60
 	syllables = list("клик","клак","клинг","кланг","кланд","клог","клац","клуц","клиц","клоц","звинг","звяньк","бзвум")
-	icon = 'modular_bandastation/species/serpentids/icon/serpentid_face.dmi'
+	icon = 'modular_bandastation/species/serpentids/icons/serpentid_face.dmi'
 	icon_state = "serpentid_eyes"
 	default_priority = 90
 

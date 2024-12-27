@@ -42,3 +42,5 @@ GLOBAL_LIST_INIT(last_names_vulp, world.file2list("strings/names/last_vulp.txt")
 /datum/controller/subsystem/accessories/PreInit()
 	..()
 	init_modular_lists()
+
+#define isserpentid(A) (is_species(A, /datum/species/serpentid))

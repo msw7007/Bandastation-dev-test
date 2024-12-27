@@ -1,29 +1,11 @@
-/obj/item/organ/liver/serpentid
-	name = "serpentid liver"
-	icon = 'modular_bandastation/species/icons/mob/species/serpentid/organs.dmi'
-	alcohol_tolerance = ALCOHOL_RATE * 2.5
-
 /// печень - вырабатывает глутамат натрия из нутриентов
 /obj/item/organ/liver/serpentid
 	name = "chemical processor"
-	icon = 'modular_ss220/species/serpentids/icons/organs.dmi'
+	icon = 'modular_bandastation/species/serpentids/icons/organs.dmi'
 	icon_state = "liver"
-	desc = "A large looking liver with some storages."
-	alcohol_intensity = 2
-	var/serp_production = 1
-	var/serp_consuption = 5
+	desc = "A large looking liver."
+	alcohol_tolerance = ALCOHOL_RATE * 2
 
 /obj/item/organ/liver/serpentid/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/organ_toxin_damage, 0.1)
-
-/obj/item/organ/liver/serpentid/on_life()
-	. = ..()
-	if(!owner)
-		return
-	for(var/datum/reagent/chemical in owner.reagents.reagent_list)
-		if(!isnull(chemical))
-			if(istype(chemical,/datum/reagent/cabbagilium) && owner.get_chemical_value(chemical.id) > serp_consuption)
-				chemical.holder.remove_reagent(chemical.id, serp_consuption)
-				owner.reagents.add_reagent("serpadrone", serp_production)
-
+	AddComponent(/datum/component/organ_toxin_damage, tox_mult_damage = 0.5, tox_rate = 0.1)

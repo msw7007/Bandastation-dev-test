@@ -1,6 +1,6 @@
 //Добавление новых алертов
 /atom/movable/screen/alert/carapace/
-	icon = 'modular_bandastation/species/serpentids/icon/screen_alert.dmi'
+	icon = 'modular_bandastation/species/serpentids/icons/screen_alert.dmi'
 
 /atom/movable/screen/alert/carapace/break_armor
 	name = "Слабые повреждения панциря."
@@ -32,6 +32,6 @@
 /atom/movable/screen/alert/carrying
 	name = "Перенос"
 	desc = "Ваш хвост обвязал случайного зеваку или ящик. Нажмите, что бы отгрузить."
-	icon = 'modular_bandastation/species/serpentids/icon/screen_alert.dmi'
+	icon = 'modular_bandastation/species/serpentids/icons/screen_alert.dmi'
 	icon_state = "holding"
 
