@@ -24,6 +24,7 @@
 
 //Внутрение органы
 #include "code/organs/internals/brain.dm"
+#include "code/organs/internals/tongue.dm"
 #include "code/organs/internals/eyes.dm"
 #include "code/organs/internals/ears.dm"
 #include "code/organs/internals/heart.dm"
@@ -32,15 +33,26 @@
 #include "code/organs/internals/stomach.dm"
 #include "code/organs/internals/appendix.dm"
 
+//Эмоуты
+#include "code/_define/emotes.dm"
+#include "code/_define/emotes_verbs.dm"
+
 //Основа
-//#include "code/serpentid.dm"
+#include "code/serpentid.dm"
 
 //Прочие механики
-//#include "code/_define/emotes.dm"
-//#include "code/_define/emotes_verbs.dm"
-//#include "code/_define/language.dm"
+#include "code/_define/language.dm"
 
 //Связанное с веществами и наукой
 #include "code/science/cabbage.dm"
-//#include "code/science/mutation.dm"
-//#include "code/science/design.dm"
+#include "code/science/mutation.dm"
+#include "code/science/design.dm"
+// BEGIN_INTERNALS
+// END_INTERNALS
+// BEGIN_FILE_DIR
+#define FILE_DIR .
+// END_FILE_DIR
+// BEGIN_PREFERENCES
+// END_PREFERENCES
+// BEGIN_INCLUDE
+// END_INCLUDE

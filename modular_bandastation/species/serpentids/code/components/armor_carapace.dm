@@ -18,7 +18,6 @@
 
 /obj/item/bodypart
 	var/encased = FALSE
-	var/open_threshold = CARAPACE_OPEN_THRESHOLD
 	var/isOpen = FALSE
 
 //Овверайд направленный на проверку, возможна ли операция (является ли конечность хитиновой или панцирной) и открыта или нет травма
@@ -37,11 +36,13 @@
 /datum/component/carapace
 	var/self_mending = FALSE
 	var/carapace_damage_mult = 1
+	var/open_threshold = CARAPACE_OPEN_THRESHOLD
 
 /datum/component/carapace/Initialize(allow_self_mending, break_threshold)
 	src.self_mending = allow_self_mending
 	var/obj/item/bodypart/affected_limb = parent
 	affected_limb.encased = CARAPACE_ENCASE_WORD
+	open_threshold = break_threshold
 
 /datum/component/carapace/RegisterWithParent()
 	RegisterSignal(parent, COMSIG_LIMB_RECEIVE_DAMAGE, PROC_REF(receive_damage))
@@ -56,7 +57,7 @@
 	SIGNAL_HANDLER
 	if(!affected_limb.encased)
 		return
-	if(!affected_limb.isOpen && affected_limb.get_damage() >= affected_limb.open_threshold)
+	if(!affected_limb.isOpen && affected_limb.get_damage() >= open_threshold)
 		affected_limb.isOpen = TRUE
 	if(length(affected_limb.contents))
 		var/obj/item/organ/O = pick(affected_limb.contents)

@@ -21,7 +21,6 @@
 		/obj/item/organ/tail/serpentid = "Default",
 	)
 
-	body_markings = list(/datum/bodypart_overlay/simple/body_marking/serpentid = "None")
 	bodypart_overrides = list(
 		BODY_ZONE_HEAD = /obj/item/bodypart/head/serpentid,
 		BODY_ZONE_CHEST = /obj/item/bodypart/chest/serpentid,

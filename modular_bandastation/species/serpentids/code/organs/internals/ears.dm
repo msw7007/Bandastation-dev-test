@@ -1,31 +1,16 @@
-/obj/item/organ/ears/serpentid
-	desc = "Большие ушки позволяют легче слышать шепот."
-	damage_multiplier = 2
-
-/obj/item/organ/ears/serpentid/on_mob_insert(mob/living/carbon/ear_owner)
-	. = ..()
-	ADD_TRAIT(ear_owner, TRAIT_GOOD_HEARING, ORGAN_TRAIT)
-
-/obj/item/organ/ears/serpentid/on_mob_remove(mob/living/carbon/ear_owner)
-	. = ..()
-	REMOVE_TRAIT(ear_owner, TRAIT_GOOD_HEARING, ORGAN_TRAIT)
-
-
 #define SERPENTID_EARS_SENSE_TIME 5 SECONDS
 
 //Уши серпентидов позволяют постоянно сканировать окружение в поисках существ в зависимости от их состояния
 /obj/item/organ/ears/serpentid
 	name = "acoustic sensor"
-	icon = 'modular_ss220/species/serpentids/icons/organs.dmi'
+	icon = 'modular_bandastation/species/serpentids/icons/organs.dmi'
 	icon_state = "ears"
 	desc = "An organ that can sense vibrations."
-	actions_types = 		list(/datum/action/item_action/organ_action/toggle/serpentid)
-	action_icon = 			list(/datum/action/item_action/organ_action/toggle/serpentid = 'modular_ss220/species/serpentids/icons/organs.dmi')
-	action_icon_state = 	list(/datum/action/item_action/organ_action/toggle/serpentid = "serpentid_abilities")
+	actions_types = list(/datum/action/item_action/organ_action/toggle)
 	var/chemical_consuption = SERPENTID_ORGAN_HUNGER_EARS
 	var/active = FALSE
 	radial_action_state = "serpentid_hear"
-	radial_action_icon = 'modular_ss220/species/serpentids/icons/organs.dmi'
+	radial_action_icon = 'modular_bandastation/species/serpentids/icons/organs.dmi'
 
 /obj/item/organ/ears/serpentid/Initialize(mapload)
 	. = ..()
@@ -36,12 +21,15 @@
 /obj/item/organ/ears/serpentid/on_life()
 	. = ..()
 	if(chemical_consuption <= owner?.nutrition && active)
-		if(prob(((max_damage - damage)/max_damage) * 100))
+		damage_multiplier = 2
+		if(prob(((maxHealth - damage)/maxHealth) * 100))
 			sense_creatures()
+	else
+		damage_multiplier = 1
 
 /obj/item/organ/ears/serpentid/switch_mode(force_off = FALSE)
 	. = ..()
-	if(!force_off && owner?.nutrition >= NUTRITION_LEVEL_HYPOGLYCEMIA && !(status & ORGAN_DEAD) && !active)
+	if(!force_off && owner?.nutrition >= NUTRITION_LEVEL_STARVING && !(organ_flags & ORGAN_FAILING) && !active)
 		active = TRUE
 		chemical_consuption = initial(chemical_consuption)
 	else
@@ -51,7 +39,7 @@
 
 /obj/item/organ/ears/serpentid/proc/sense_creatures()
 	for(var/mob/living/creature in range(9, owner))
-		var/last_movement_timer = world.time - creature.l_move_time
+		var/last_movement_timer = world.time - creature.last_pushoff
 		if(creature == owner || creature.stat == DEAD || last_movement_timer > SERPENTID_EARS_SENSE_TIME)
 			continue
 		new /obj/effect/temp_visual/sonar_ping(owner.loc, owner, creature)

@@ -1,7 +1,7 @@
 /obj/item/organ/stomach/serpentid
 	name = "food processor"
 	icon = 'modular_bandastation/species/serpentids/icons/organs.dmi'
-	icon_state = "kidneys"
+	icon_state = "stomach"
 	desc = "A large looking stomatch."
 	hunger_modifier = 1.3
 

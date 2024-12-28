@@ -7,4 +7,7 @@
 
 /obj/item/organ/appendix/serpentid/on_life(seconds_per_tick, times_fired)
 	. = ..()
-	// Аппендикс ГБС - подавляет ВСЕ болезни. Кроме аппендицита.
+	for(var/datum/disease/illness in owner.diseases)
+		illness.update_stage(max(illness.stage - 1, 1))
+		if(illness.disease_flags & CURABLE && illness.stage == 1)
+			illness.cure()
