@@ -1,30 +1,31 @@
 //===Клинки через грудной имплант===
-/obj/item/organ/internal/cyberimp/chest/serpentid_blades
+/obj/item/organ/cyberimp/serpentid_blades
 	name = "neuronodule of blades"
 	desc = "control organ of upper blades"
 	icon_state = "chest_implant"
-	parent_organ = "chest"
+	slot = ORGAN_SLOT_MONSTER_CORE
+	zone = BODY_ZONE_CHEST
 	actions_types = list(/datum/action/item_action/organ_action/toggle/switch_blades)
 	contents = newlist(/obj/item/kitchen/knife/combat/serpentblade,/obj/item/kitchen/knife/combat/serpentblade)
-	action_icon = list(/datum/action/item_action/organ_action/toggle/switch_blades = 'modular_ss220/species/serpentids/icons/organs.dmi')
-	action_icon_state = list(/datum/action/item_action/organ_action/toggle/switch_blades = "serpentid_hand_act")
+	useable = FALSE
+	organ_flags = ORGAN_ORGANIC | ORGAN_EDIBLE | ORGAN_VIRGIN
 	var/obj/item/holder_l = null
-	var/icon_file = 'modular_ss220/species/serpentids/icons/mob/r_serpentid.dmi'
+	var/icon_file = 'modular_bandastation/species/serpentids/icons/r_serpentid.dmi'
 	var/new_icon_state = "blades_0"
 	var/mutable_appearance/old_overlay
 	var/mutable_appearance/new_overlay
 	var/overlay_color
 	var/blades_active = FALSE
 	var/activation_in_progress = FALSE
-	unremovable = TRUE
-	emp_proof = TRUE
+
+
 /datum/action/item_action/organ_action/toggle/switch_blades
 	name = "Switch Threat Mode"
 	desc = "Switch your stance to show other your intentions"
-	button_overlay_icon = 'modular_ss220/species/serpentids/icons/organs.dmi'
+	button_overlay_icon = 'modular_bandastation/species/serpentids/icons/organs.dmi'
 	button_overlay_icon_state = "serpentid_hand_act"
 
-/obj/item/organ/internal/cyberimp/chest/serpentid_blades/on_life()
+/obj/item/organ/cyberimp/serpentid_blades/on_life()
 	. = ..()
 	if(blades_active)
 		var/isleft = owner.hand
@@ -32,11 +33,11 @@
 		if(!istype(item, /obj/item/grab))
 			owner.drop_r_hand()
 
-/obj/item/organ/internal/cyberimp/chest/serpentid_blades/render()
+/obj/item/organ/cyberimp/serpentid_blades/render()
 	var/mutable_appearance/our_MA = mutable_appearance(icon_file, new_icon_state, layer = -INTORGAN_LAYER)
 	return our_MA
 
-/obj/item/organ/internal/cyberimp/chest/serpentid_blades/ui_action_click()
+/obj/item/organ/cyberimp/serpentid_blades/ui_action_click()
 	if(activation_in_progress)
 		return
 	if(crit_fail || (!holder_l && !length(contents)))
@@ -54,7 +55,7 @@
 			Extend()
 	activation_in_progress = FALSE
 
-/obj/item/organ/internal/cyberimp/chest/serpentid_blades/update_overlays()
+/obj/item/organ/cyberimp/serpentid_blades/update_overlays()
 	. = .. ()
 	if(old_overlay)
 		owner.overlays -= old_overlay
@@ -67,7 +68,7 @@
 		old_overlay = new_overlay
 		owner.overlays += new_overlay
 
-/obj/item/organ/internal/cyberimp/chest/serpentid_blades/proc/Extend()
+/obj/item/organ/cyberimp/serpentid_blades/proc/Extend()
 	if(!(contents[1] in src))
 		return
 	if(status & ORGAN_DEAD)
@@ -104,7 +105,7 @@
 	update_icon(UPDATE_OVERLAYS)
 	return TRUE
 
-/obj/item/organ/internal/cyberimp/chest/serpentid_blades/proc/Retract()
+/obj/item/organ/cyberimp/serpentid_blades/proc/Retract()
 	if(status & ORGAN_DEAD)
 		return
 
@@ -120,7 +121,7 @@
 /datum/species/spec_attack_hand(mob/living/carbon/human/M, mob/living/carbon/human/H, datum/martial_art/attacker_style) //Handles any species-specific attackhand events.
 	if(!istype(M))
 		return
-	var/obj/item/organ/internal/cyberimp/chest/serpentid_blades/blades_implant = M.get_int_organ(/obj/item/organ/internal/cyberimp/chest/serpentid_blades)
+	var/obj/item/organ/cyberimp/serpentid_blades/blades_implant = M.get_int_organ(/obj/item/organ/cyberimp/serpentid_blades)
 	if(blades_implant)
 		if(blades_implant.owner.invisibility != INVISIBILITY_OBSERVER)
 			blades_implant.owner.reset_visibility()
@@ -273,7 +274,7 @@
 	righthand_file = null
 	desc = "Biological melee weapon. Sharp and durable. It can cut off some heads, or maybe not..."
 	force = 20
-	armour_penetration_flat = 30
+	armour_penetration = 30
 	tool_behaviour = TOOL_SAW
 
 /obj/item/kitchen/knife/combat/serpentblade/Initialize(mapload)

@@ -62,6 +62,7 @@
 	if(length(affected_limb.contents))
 		var/obj/item/organ/O = pick(affected_limb.contents)
 		O.apply_organ_damage(burn * affected_limb.burn_dam, required_organ_flag = ORGAN_ORGANIC)
+	SEND_SIGNAL(affected_limb, COMSIG_CARAPACE_CHECK)
 
 /datum/component/carapace/proc/heal_damage(obj/item/bodypart/affected_limb, brute, burn, internal = 0, robo_repair = 0, updating_health = TRUE)
 	SIGNAL_HANDLER
@@ -73,6 +74,7 @@
 				wound.remove_wound()
 		if(affected_limb.isOpen && prob(CARAPACE_HEAL_BROKEN_PROB))
 			affected_limb.isOpen = FALSE
+	SEND_SIGNAL(affected_limb, COMSIG_CARAPACE_CHECK)
 
 #undef CARAPACE_HEAL_BROKEN_PROB
 #undef CARAPACE_BLOCK_OPERATION
