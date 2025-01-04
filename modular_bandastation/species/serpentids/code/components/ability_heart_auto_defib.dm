@@ -5,7 +5,7 @@
 #define AUTO_DEFIBRILATION_THRESHOLD 100
 
 /datum/component/defib_heart_hunger
-	var/obj/item/organ/internal/organ
+	var/obj/item/organ/organ
 
 /datum/component/defib_heart_hunger/Initialize(human, income_chemical_id = "")
 	organ = parent
@@ -18,7 +18,7 @@
 /datum/component/defib_heart_hunger/process()
 	var/mob/living/carbon/human/owner = organ.owner
 	if(!owner)
-		var/obj/item/organ/internal/limb = parent
+		var/obj/item/organ/limb = parent
 		owner = limb.owner
 	if(!owner)
 		qdel(src)
