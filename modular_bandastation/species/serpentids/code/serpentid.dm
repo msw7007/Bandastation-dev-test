@@ -2,6 +2,10 @@
 	name = "\improper Гигантский Бронированный Серпентид"
 	plural_form = "Serpentids"
 	id = SPECIES_SERPENTID
+
+	inherent_biotypes = MOB_HUMANOID
+
+
 	inherent_traits = list(
 		TRAIT_MUTANT_COLORS, TRAIT_GLUTTON, TRAIT_ILLITERATE, TRAIT_PERFECT_ATTACKER
 	)
@@ -62,6 +66,7 @@
 	features["furcolor_fourth"] = furcolor
 	features["furcolor_fifth"] = furcolor
 	return features
+*/
 
 /datum/species/serpentid/get_physical_attributes()
 	return "Вульпканины - двуногие гуманоиды собакоподобные покрытые шерстью, ростом от 140 до 180 см и весом до 60 кг. \
@@ -209,58 +214,3 @@
 		'sound/mobs/humanoids/human/laugh/manlaugh1.ogg',
 		'sound/mobs/humanoids/human/laugh/manlaugh2.ogg',
 	)
-
-/datum/species/serpentid/add_body_markings(mob/living/carbon/human/vulp) // OVERRIDE /datum/species/proc/add_body_markings
-	for(var/markings_type in body_markings)
-		var/datum/bodypart_overlay/simple/body_marking/markings = new markings_type()
-		var/accessory_name = vulp.dna.features[markings.dna_feature_key]
-		var/datum/sprite_accessory/serpentid_body_markings/accessory = markings.get_accessory(accessory_name)
-
-		if(isnull(accessory))
-			return
-
-		for(var/obj/item/bodypart/part as anything in markings.applies_to)
-			var/obj/item/bodypart/people_part = vulp.get_bodypart(initial(part.body_zone))
-
-			if(!people_part || !istype(people_part, part))
-				continue
-
-			var/datum/bodypart_overlay/simple/body_marking/overlay = new markings_type ()
-
-			overlay.icon = accessory.icon
-			overlay.icon_state = accessory.icon_state
-			overlay.use_gender = accessory.gender_specific
-			overlay.draw_color = accessory.color_src ? vulp.dna.features["furcolor_first"] : null
-
-			people_part.add_bodypart_overlay(overlay)
-
-/obj/item/bodypart/head/get_hair_and_lips_icon(dropped)
-	. = ..()
-
-	var/image_dir = NONE
-	if(dropped)
-		image_dir = SOUTH
-	var/image/facial_hair_overlay
-	var/datum/sprite_accessory/sprite_accessory
-	var/mob/living/carbon/human/user = src.owner
-	if(istype(user) && user.dna && (head_flags & HEAD_serpentid))
-		sprite_accessory = SSaccessories.serpentid_head_markings_list[user.dna.features["serpentid_head_markings"]]
-		if(sprite_accessory)
-			facial_hair_overlay = image(sprite_accessory.icon, "m_serpentid_head_markings_[sprite_accessory.icon_state]_ADJ", -BODY_ADJ_LAYER, image_dir)
-			facial_hair_overlay.color = user.dna.features["furcolor_third"]
-			. += facial_hair_overlay
-
-		sprite_accessory = SSaccessories.serpentid_head_accessories_list[user.dna.features["serpentid_head_accessories"]]
-		if(sprite_accessory)
-			facial_hair_overlay = image(sprite_accessory.icon, "m_serpentid_head_accessories_[sprite_accessory.icon_state]_ADJ", -BODY_ADJ_LAYER, image_dir)
-			facial_hair_overlay.color = user.dna.features["furcolor_fourth"]
-			. += facial_hair_overlay
-
-		sprite_accessory = SSaccessories.serpentid_facial_hair_list[user.dna.features["serpentid_facial_hair"]]
-		if(sprite_accessory)
-			facial_hair_overlay = image(sprite_accessory.icon, "m_serpentid_facial_hair_[sprite_accessory.icon_state]_ADJ", -BODY_ADJ_LAYER, image_dir)
-			facial_hair_overlay.color = user.dna.features["furcolor_fifth"]
-			. += facial_hair_overlay
-
-	return .
-*/

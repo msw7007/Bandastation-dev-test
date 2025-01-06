@@ -4,7 +4,7 @@
 	name = "serpentid tail"
 	preference = "feature_serpentid_tail"
 
-	bodypart_overlay = /datum/bodypart_overlay/mutant/tail/serpentid
+	//bodypart_overlay = /datum/bodypart_overlay/mutant/tail/serpentid
 
 	wag_flags = WAG_ABLE
 	var/datum/bodypart_overlay/mutant/serpentid_tail_markings/tail_markings_overlay

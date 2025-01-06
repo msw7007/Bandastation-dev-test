@@ -115,6 +115,9 @@
 		if(!istype(owner))
 			return
 
+		if(!blades_implant.blades_active)
+			return
+
 		CHECK_DNA_AND_SPECIES(owner)
 		CHECK_DNA_AND_SPECIES(target)
 
@@ -145,30 +148,50 @@
 		. = ..()
 
 //Модификация усиленного граба
-/datum/species/proc/blades_grab(mob/living/carbon/human/user, mob/living/carbon/human/target, datum/martial_art/attacker_style)
-	1
+/mob/living/grab(mob/living/target)
+	if(!istype(target))
+		return FALSE
+	if(SEND_SIGNAL(src, COMSIG_LIVING_GRAB, target) & (COMPONENT_CANCEL_ATTACK_CHAIN|COMPONENT_SKIP_ATTACK))
+		return FALSE
+	if(target.check_block(src, 0, "[src]'s grab", UNARMED_ATTACK))
+		return FALSE
+	if(istype(src, /mob/living/carbon/human))
+		var/mob/living/carbon/human/H = src
+		if(istype(H.dna.species, /datum/species/serpentid))
+			var/obj/item/organ/cyberimp/serpentid_blades/blades_implant = H.get_organ_by_type(/obj/item/organ/cyberimp/serpentid_blades)
+			if(blades_implant && !blades_implant.blades_active)
+				H.blades_grab(target)
+	else
+		. = ..()
+
+/mob/living/carbon/human/proc/blades_grab(mob/living/carbon/human/target, datum/martial_art/attacker_style)
+	grab(target)
+	if(HAS_TRAIT(src, TRAIT_PACIFISM) && !attacker_style?.pacifist_style)
+		to_chat(src, span_warning("You don't want to harm [target]!"))
+		setGrabState(GRAB_AGGRESSIVE)
+		return
+
+	setGrabState(GRAB_NECK)
 
 //Модификация усиленного дизарма
-/datum/species/proc/blades_disarm(mob/living/carbon/human/user, mob/living/carbon/human/target, datum/martial_art/attacker_style)
-	2
+/datum/species/serpentid/proc/blades_disarm(mob/living/carbon/human/user, mob/living/carbon/human/target, datum/martial_art/attacker_style)
+	if(user.body_position != STANDING_UP)
+		return FALSE
+	if(user == target)
+		return FALSE
+	if(user.loc == target.loc)
+		return FALSE
+	//Двойной шов
+	user.disarm(target)
+	user.disarm(target)
 
 //Модификация агрессивного поведения
-/datum/species/proc/blades_harm(mob/living/carbon/human/user, mob/living/carbon/human/target, datum/martial_art/attacker_style)
-	3
-	/*if(HAS_TRAIT(user, TRAIT_PACIFISM))
-		to_chat(user, "<span class='warning'>You don't want to harm [target]!</span>")
-		return FALSE
-	if(target != user && handle_harm_antag(user, target))
-		return FALSE
-	if(target.check_block())
-		target.visible_message("<span class='warning'>[target] blocks [user]'s attack!</span>")
-		return FALSE
-	if(SEND_SIGNAL(target, COMSIG_HUMAN_ATTACKED, user) & COMPONENT_CANCEL_ATTACK_CHAIN)
-		return FALSE
-	if(!user.hand)
+/datum/species/serpentid/proc/blades_harm(mob/living/carbon/human/user, mob/living/carbon/human/target, datum/martial_art/attacker_style)
+	//Переключить на руку с оружием
+	var/obj/item/is_blade = user.get_active_held_item()
+	if(!istype(is_blade, /obj/item/kitchen/knife/combat/serpentblade))
 		user.swap_hand()
-	var/obj/item/kitchen/knife/combat/serpentblade/blade = user.get_active_hand()
-	blade.attack(target, user)*/
+	harm(user, target, attacker_style)
 
 // ============ Органы внешние ============
 /obj/item/kitchen/knife/combat/serpentblade
