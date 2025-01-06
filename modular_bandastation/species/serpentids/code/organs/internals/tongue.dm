@@ -10,7 +10,7 @@
 	disliked_foodtypes =  FRUIT | NUTS | GROSS | GRAIN
 
 /obj/item/organ/tongue/serpentid/get_possible_languages()
-	return ..() + /datum/language/canilunzt
+	return ..() + /datum/language/nabberian
 
 /obj/item/organ/tongue/serpentid/on_mob_insert(mob/living/carbon/owner)
 	. = ..()

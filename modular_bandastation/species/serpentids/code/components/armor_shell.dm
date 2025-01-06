@@ -14,7 +14,7 @@
 	var/mob/living/carbon/human/H
 	var/heal_cooldown = 0 SECONDS
 
-/datum/component/carapace_shell/Initialize(mob/living/carbon/human/caller, heal_cooldown = 10 MINUTES)
+/datum/component/carapace_shell/New(mob/living/carbon/human/caller, heal_cooldown = 10 MINUTES)
 	if(!istype(caller))
 		return
 	H = caller

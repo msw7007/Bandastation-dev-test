@@ -7,7 +7,7 @@
 	var/mob/living/carbon/human/carrier = null
 	var/atom/movable/load /// what we're transporting
 
-/datum/component/gadom_cargo/Initialize()
+/datum/component/gadom_cargo/New()
 	..()
 	carrier = parent
 

@@ -9,7 +9,7 @@
 	var/state_attack = FALSE
 	var/attack_CD = 0
 
-/datum/component/double_attack/Initialize(attack_CD_OVR = 0)
+/datum/component/double_attack/New(attack_CD_OVR = 0)
 	attack_CD = attack_CD_OVR
 
 /datum/component/double_attack/RegisterWithParent()

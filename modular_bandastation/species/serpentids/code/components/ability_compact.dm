@@ -7,7 +7,7 @@
 	var/radial_additive_state
 	var/radial_additive_icon
 
-/datum/component/organ_action/Initialize(state, icon)
+/datum/component/organ_action/New(state, icon)
 	organ = parent
 	radial_additive_state = state
 	radial_additive_icon = icon

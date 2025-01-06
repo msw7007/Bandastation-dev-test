@@ -6,7 +6,7 @@
 	var/obj/item/organ/organ
 	var/consuption_count = 0
 
-/datum/component/hunger_organ/Initialize(reagent_id)
+/datum/component/hunger_organ/New(reagent_id)
 	organ = parent
 
 /datum/component/hunger_organ/RegisterWithParent()
