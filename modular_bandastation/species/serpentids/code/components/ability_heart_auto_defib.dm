@@ -17,12 +17,12 @@
 	. = ..()
 
 /datum/component/defib_heart_hunger/process()
-	var/mob/living/carbon/human/owner = organ.owner
+	var/mob/living/carbon/human/owner = organ?.owner
 	if(!owner)
 		var/obj/item/organ/limb = parent
 		owner = limb.owner
 	if(!owner)
-		qdel(src)
+		return
 	var/levelOfDamage = (owner.getBruteLoss() + owner.getFireLoss())
 	if(owner?.nutrition < NUTRITION_LEVEL_FED || owner.stat != DEAD || levelOfDamage > AUTO_DEFIBRILATION_THRESHOLD)
 		return
