@@ -723,6 +723,18 @@
 		if(SEND_SIGNAL(target_shove_turf, COMSIG_LIVING_DISARM_PRESHOVE, src, target, weapon) & COMSIG_LIVING_ACT_SOLID)
 			shove_flags |= SHOVE_BLOCKED
 		else
+			//Добавить запрос shova из вещи
+			var/mob/living/carbon/human/H = src
+			if(ispath(H))
+				var/list/euipment_items = H.get_equipped_items()
+				var/list/shove_verbs = list()
+				for(var/obj/item in euipment_items)
+					shove_verbs += item.get_shove_verbs()
+				var/picked_verb = pick(shove_verbs)
+				target.visible_message(span_danger("[name] [picked_verb] [target.name]!"),
+					span_userdanger("You're [picked_verb] by [name]!"), span_hear("You hear aggressive shuffling followed by a loud thud!"), COMBAT_MESSAGE_RANGE, src)
+				to_chat(src, span_danger("You [picked_verb] [target.name]!"))
+				//вывести в чат сообщение
 			target.Move(target_shove_turf, shove_dir)
 			if(get_turf(target) == target_old_turf)
 				shove_flags |= SHOVE_BLOCKED

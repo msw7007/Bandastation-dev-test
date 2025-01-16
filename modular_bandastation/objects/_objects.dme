@@ -4,6 +4,7 @@
 
 #include "code/effects/turf_decal.dm"
 
+#include "code/_obj.dm"
 #include "code/items/banners.dm"
 #include "code/items/cards_ids.dm"
 #include "code/items/hampters.dm"

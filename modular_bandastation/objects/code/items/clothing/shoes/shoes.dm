@@ -23,3 +23,6 @@
 /obj/item/clothing/shoes/shark/light
 	name = "light shark shoes"
 	icon_state = "shark_light"
+
+/obj/item/clothing/shoes/jackboots
+	shove_verbs = list("отвесил смачного пендаля")
