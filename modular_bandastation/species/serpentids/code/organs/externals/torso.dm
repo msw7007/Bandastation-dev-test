@@ -12,16 +12,8 @@
 	var/radial_action_state = "serpentid_stealth"
 	var/radial_action_icon = 'modular_bandastation/species/serpentids/icons/organs.dmi'
 
-///Хитиновые конечности - прочее
-/obj/item/bodypart/groin/carapace
-	var/min_broken_damage = 40
-
-/obj/item/bodypart/groin/carapace/Initialize(mapload)
-	. = ..()
-	AddComponent(/datum/component/carapace, FALSE, min_broken_damage)
-
 /obj/item/bodypart/chest/serpentid/get_butt_sprite()
-	return BUTT_SPRITE_SERPTENTID
+	return BUTT_SPRITE_SERPENTID
 
 /obj/item/bodypart/chest/serpentid/Initialize(mapload)
 	. = ..()

@@ -1,4 +1,5 @@
 #define SPECIES_SERPENTID "serpentid"
+#define BUTT_SPRITE_SERPENTID "serpentid"
 
 #define EMOTE_HUMAN_SERPENTIDROAR 			"Рычать"
 #define EMOTE_HUMAN_SERPENTIDHISS 			"Шипеть"
@@ -8,8 +9,6 @@
 
 /// Базовое время погрузки ящиков/мобов на куклу
 #define GADOM_BASIC_LOAD_TIMER 2 SECONDS
-
-#define BUTT_SPRITE_SERPTENTID "serp_butt"
 
 //Обычный, здоровый ГБС без дополнительных химикатов и болезней потребляет 0.1 единицы голода в тик (2 секунды), считаем от хорошо насыщенного до истощения
 //Сколько голода потребляют легкие (сальбутамол и подвыработка кислорода)
