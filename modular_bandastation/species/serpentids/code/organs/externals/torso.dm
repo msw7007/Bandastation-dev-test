@@ -1,5 +1,6 @@
 /obj/item/bodypart/chest/serpentid
 	icon_greyscale = 'modular_bandastation/species/serpentids/icons/r_serpentid.dmi'
+	icon_state = "serpentid_chest_m"
 	limb_id = SPECIES_SERPENTID
 	is_dimorphic = TRUE
 	wing_types = list(/obj/item/organ/wings/functional/dragon)

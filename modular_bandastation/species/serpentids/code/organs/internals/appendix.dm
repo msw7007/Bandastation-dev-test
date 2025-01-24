@@ -1,6 +1,6 @@
 
 /obj/item/organ/appendix/serpentid
-	name = "food processor"
+	name = "cellar actualizer"
 	icon = 'modular_bandastation/species/serpentids/icons/organs.dmi'
 	icon_state = "kidneys"
 	desc = "A large looking appendix."

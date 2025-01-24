@@ -3,7 +3,6 @@
 /obj/item/organ/tail/serpentid
 	name = "serpentid tail"
 	preference = "feature_serpentid_tail"
-	//icon_greyscale = 'modular_bandastation/species/serpentids/icons/r_serpentid.dmi'
 
 	bodypart_overlay = /datum/bodypart_overlay/mutant/tail/serpentid
 
@@ -19,7 +18,7 @@
 	remove_verb(owner, /mob/living/carbon/human/proc/emote_wag)
 
 /datum/bodypart_overlay/mutant/tail/serpentid
-	feature_key = "tailserpentid"
+	feature_key = "tail_serpentid"
 
 /datum/bodypart_overlay/mutant/tail/serpentid/get_global_feature_list()
 	return SSaccessories.tails_list_serpentid
