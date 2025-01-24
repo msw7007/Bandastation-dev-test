@@ -1,7 +1,7 @@
 /obj/item/bodypart/head/serpentid
 	icon_greyscale = 'modular_bandastation/species/serpentids/icons/r_serpentid.dmi'
 	limb_id = SPECIES_SERPENTID
-	icon_state = "serpentid_head_m"
+	icon_state = "serpentid_head"
 	is_dimorphic = TRUE
 	head_flags = HEAD_EYESPRITES|HEAD_EYECOLOR|HEAD_EYEHOLES|HEAD_DEBRAIN
 	encased = CARAPACE_ENCASE_WORD

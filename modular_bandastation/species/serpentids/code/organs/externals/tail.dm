@@ -3,7 +3,7 @@
 /obj/item/organ/tail/serpentid
 	name = "serpentid tail"
 	preference = "feature_serpentid_tail"
-
+	icon = 'modular_bandastation/species/serpentids/icons/r_serpentid.dmi'
 	bodypart_overlay = /datum/bodypart_overlay/mutant/tail/serpentid
 
 	wag_flags = WAG_ABLE
