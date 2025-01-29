@@ -4,6 +4,11 @@
 #define EMOTE_HUMAN_SERPENTIDROAR 			"Рычать"
 #define EMOTE_HUMAN_SERPENTIDHISS 			"Шипеть"
 #define EMOTE_HUMAN_SERPENTIDWIGGLE 		"Шевелить усиками"
+#define EMOTE_HUMAN_SERPENTIDBLINK 			"Моргать щитками"
+#define EMOTE_HUMAN_SERPENTIDBLINKBLADES 	"Чистить глаза"
+#define EMOTE_HUMAN_SERPENTIDBUZZ 			"Стрекот крыльев"
+#define EMOTE_HUMAN_SERPENTIDMANDIBLES		"Стучать мандибулами"
+#define EMOTE_HUMAN_SERPENTIDBLADES			"Стучать клинками"
 
 #define MOOD_CATEGORY_SPECIFIC_FOOD "spieces_food"
 

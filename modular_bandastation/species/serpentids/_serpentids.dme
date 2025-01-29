@@ -15,12 +15,14 @@
 #include "code/components/organs_toxins.dm"
 
 //Внешние органы
-#include "code/organs/externals/blades.dm"
+#include "code/organs/externals/additional/bladesbase.dm"
+#include "code/organs/externals/additional/blades.dm"
+#include "code/organs/externals/additional/tail.dm"
 #include "code/organs/externals/head.dm"
 #include "code/organs/externals/torso.dm"
-#include "code/organs/externals/tail.dm"
 #include "code/organs/externals/hands.dm"
 #include "code/organs/externals/legs.dm"
+
 
 //Внутрение органы
 #include "code/organs/internals/brain.dm"

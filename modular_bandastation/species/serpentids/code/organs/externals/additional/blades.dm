@@ -1,3 +1,35 @@
+
+
+/obj/item/organ/serpenblades/serpentid
+	name = "serpentid tail"
+	preference = "feature_serpentid_blades"
+	icon = 'modular_bandastation/species/serpentids/icons/r_serpentid.dmi'
+	bodypart_overlay = /datum/bodypart_overlay/mutant/serpenblades/serpentid
+
+	actions_types = list(/datum/action/item_action/organ_action/toggle/switch_blades)
+	contents = newlist(/obj/item/kitchen/knife/combat/serpentblade)
+	var/datum/bodypart_overlay/mutant/serpenblades/serpenblades_overlay
+	var/obj/item/holder_l = null
+	var/icon_file = 'modular_bandastation/species/serpentids/icons/r_serpentid.dmi'
+	var/new_icon_state = "blades_0"
+	var/mutable_appearance/old_overlay
+	var/mutable_appearance/new_overlay
+	var/overlay_color
+	var/blades_active = FALSE
+	var/activation_in_progress = FALSE
+	/// Sound played when extending
+	var/extend_sound = 'sound/vehicles/mecha/mechmove03.ogg'
+	/// Sound played when retracting
+	var/retract_sound = 'sound/vehicles/mecha/mechmove03.ogg'
+
+/obj/item/organ/serpenblades/serpentid/on_mob_insert(mob/living/carbon/owner)
+	. = ..()
+
+
+/obj/item/organ/serpenblades/serpentid/on_mob_remove(mob/living/carbon/owner)
+	. = ..()
+
+
 //===Клинки через грудной имплант===
 /obj/item/organ/cyberimp/serpentid_blades
 	name = "neuronodule of blades"

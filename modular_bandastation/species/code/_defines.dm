@@ -31,6 +31,7 @@ GLOBAL_LIST_INIT(last_names_vulp, world.file2list("strings/names/last_vulp.txt")
 	var/list/vulpkanin_tail_markings_list
 	var/list/vulpkanin_facial_hair_list
 	var/list/tails_list_serpentid
+	var/list/serpenblades
 
 /datum/controller/subsystem/accessories/proc/init_modular_lists()
 	vulpkanin_body_markings_list = init_sprite_accessory_subtypes(/datum/sprite_accessory/vulpkanin_body_markings, add_blank = TRUE)[DEFAULT_SPRITE_LIST]
@@ -40,6 +41,7 @@ GLOBAL_LIST_INIT(last_names_vulp, world.file2list("strings/names/last_vulp.txt")
 	vulpkanin_tail_markings_list = init_sprite_accessory_subtypes(/datum/sprite_accessory/vulpkanin_tail_markings, add_blank = TRUE)[DEFAULT_SPRITE_LIST]
 	vulpkanin_facial_hair_list = init_sprite_accessory_subtypes(/datum/sprite_accessory/vulpkanin_facial_hair, add_blank = TRUE)[DEFAULT_SPRITE_LIST]
 	tails_list_serpentid = init_sprite_accessory_subtypes(/datum/sprite_accessory/tails/serpentid, add_blank = FALSE)[DEFAULT_SPRITE_LIST]
+	serpenblades = init_sprite_accessory_subtypes(/datum/sprite_accessory/serpenblades/serpentid, add_blank = FALSE)[DEFAULT_SPRITE_LIST]
 
 /datum/controller/subsystem/accessories/PreInit()
 	..()

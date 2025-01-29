@@ -25,3 +25,41 @@
 	message_param = "шевелит усиками в сторону %t."
 	cooldown = 5 SECONDS
 	sound = 'modular_bandastation/species/serpentids/sounds/serpentid_tendrils.ogg'
+
+/datum/emote/living/carbon/human/serpentidblinks
+	key = "serpentidblinks"
+	key_third_person = "serpentidblinks"
+	message = "опускает и поднимает глазные щитки."
+	message_param = "опускает и поднимает глазные щитки, смотря на %t."
+	sound = null
+
+/datum/emote/living/carbon/human/serpentidblinksblades
+	key = "serpentidblinksblades"
+	key_third_person = "serpentidblinksblades"
+	message = "прочищает глаза краями лезвий."
+	message_param = "прочищает глаза краями лезвий, смотря на %t."
+	sound = null
+
+/datum/emote/living/carbon/human/serpentidbuzzes
+	key = "serpentidbuzzes"
+	key_third_person = "serpentidbuzzes"
+	message = "слегка вибрирует спинным панцирем."
+	message_param = "слегка вибрирует спинным панцирем в сторону %t."
+	cooldown = 5 SECONDS
+	sound = 'modular_bandastation/species/serpentids/sounds/scream_moth.ogg'
+
+/datum/emote/living/carbon/human/serpentidmandibles
+	key = "serpentidmandibles"
+	key_third_person = "serpentidmandibles"
+	message = "стучит мандибулами"
+	message_param = "стучит мандибулами в сторону %t."
+	cooldown = 5 SECONDS
+	sound = 'modular_bandastation/species/serpentids/sounds/Kidanclack.ogg'
+
+/datum/emote/living/carbon/human/serpentidblades
+	key = "serpentidblades"
+	key_third_person = "serpentidblades"
+	message = "стучит лезвиями."
+	message_param = "стучит лезвиями в сторону %t."
+	cooldown = 5 SECONDS
+	sound = 'sound/items/weapons/blade1.ogg'
