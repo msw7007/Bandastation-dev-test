@@ -7,7 +7,7 @@
 /datum/component/defib_heart_hunger
 	var/obj/item/organ/organ
 
-/datum/component/defib_heart_hunger/New(human, income_chemical_id = "")
+/datum/component/defib_heart_hunger/Initialize(human, income_chemical_id = "")
 	organ = parent
 	START_PROCESSING(SSdcs, src)
 	. = ..()

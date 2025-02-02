@@ -48,13 +48,15 @@
 /obj/item/organ/eyes/serpentid/switch_mode(force_off = FALSE)
 	. = ..()
 	if(!force_off && owner?.nutrition >= NUTRITION_LEVEL_STARVING && !(organ_flags & ORGAN_FAILING) && !active)
+		active = TRUE
 		lighting_cutoff = LIGHTING_CUTOFF_FULLBRIGHT
 		chemical_consuption = initial(chemical_consuption)
-		active = TRUE
+		owner.visible_message(span_warning("Зрачки [owner] расширяются!"))
 	else
+		active = FALSE
 		lighting_cutoff = initial(lighting_cutoff)
 		chemical_consuption = 0
-		active = FALSE
+		owner.visible_message(span_notice("Зрачки [owner] сужаются."))
 	owner?.update_sight()
 	SEND_SIGNAL(src, COMSIG_ORGAN_CHANGE_CHEM_CONSUPTION, chemical_consuption)
 

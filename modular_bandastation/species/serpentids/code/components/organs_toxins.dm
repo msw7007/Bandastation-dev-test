@@ -10,7 +10,7 @@
 	var/toxin_damage_rate
 	var/toxin_block_rate
 
-/datum/component/organ_toxin_damage/New(tox_rate = TOX_ORGANS_PROCESS, tox_mult_damage = 1)
+/datum/component/organ_toxin_damage/Initialize(tox_rate = TOX_ORGANS_PROCESS, tox_mult_damage = 1)
 	organ = parent
 	toxin_damage_rate = tox_rate
 	toxin_block_rate = tox_mult_damage

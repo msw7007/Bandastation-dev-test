@@ -6,7 +6,7 @@
 	var/obj/item/organ/organ
 	var/consuption_count = 0
 
-/datum/component/hunger_organ/New(reagent_id)
+/datum/component/hunger_organ/Initialize(reagent_id)
 	organ = parent
 
 /datum/component/hunger_organ/RegisterWithParent()
@@ -21,9 +21,22 @@
 	SIGNAL_HANDLER
 	if(isnull(organ.owner))
 		return TRUE
+	var/active = FALSE
+	if(istype(organ, /obj/item/organ/liver/serpentid))
+		var/obj/item/organ/liver/serpentid/checkorgan = organ
+		active = checkorgan.cloak_engaged
+	if(istype(organ, /obj/item/organ/eyes/serpentid))
+		var/obj/item/organ/eyes/serpentid/checkorgan = organ
+		active = checkorgan.active
+	if(istype(organ, /obj/item/organ/lungs/serpentid))
+		var/obj/item/organ/lungs/serpentid/checkorgan = organ
+		active = checkorgan.active_secretion
+	if(istype(organ, /obj/item/organ/ears/serpentid))
+		var/obj/item/organ/ears/serpentid/checkorgan = organ
+		active = checkorgan.active
 	if(consuption_count && organ.owner.nutrition > NUTRITION_LEVEL_STARVING)
 		organ.owner.adjust_nutrition(-consuption_count)
-	else //Если количества недостаточно - выключить режим
+	else if(active) //Если количества недостаточно - выключить режим
 		organ.switch_mode(force_off = TRUE)
 
 

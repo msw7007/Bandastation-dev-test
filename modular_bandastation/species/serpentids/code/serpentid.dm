@@ -23,8 +23,6 @@
 	mutantstomach = /obj/item/organ/stomach/serpentid
 	mutant_organs = list(
 		/obj/item/organ/tail/serpentid = "Default",
-		/obj/item/organ/serpenblades = SPRITE_ACCESSORY_NONE,
-		/obj/item/organ/serpenblades/serpentid = "Default",
 	)
 
 	bodypart_overrides = list(

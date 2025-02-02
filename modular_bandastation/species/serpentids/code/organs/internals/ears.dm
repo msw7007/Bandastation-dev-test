@@ -32,9 +32,11 @@
 	if(!force_off && owner?.nutrition >= NUTRITION_LEVEL_STARVING && !(organ_flags & ORGAN_FAILING) && !active)
 		active = TRUE
 		chemical_consuption = initial(chemical_consuption)
+		owner.visible_message(span_warning("Тело [owner] слегка колышется."))
 	else
 		active = FALSE
 		chemical_consuption = 0
+		owner.visible_message(span_notice("Тело [owner] перестает колыхаться."))
 	SEND_SIGNAL(src, COMSIG_ORGAN_CHANGE_CHEM_CONSUPTION, chemical_consuption)
 
 /obj/item/organ/ears/serpentid/proc/sense_creatures()

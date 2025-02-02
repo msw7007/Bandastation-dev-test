@@ -38,7 +38,7 @@
 	var/carapace_damage_mult = 1
 	var/open_threshold = CARAPACE_OPEN_THRESHOLD
 
-/datum/component/carapace/New(allow_self_mending, break_threshold)
+/datum/component/carapace/Initialize(allow_self_mending, break_threshold)
 	src.self_mending = allow_self_mending
 	var/obj/item/bodypart/affected_limb = parent
 	affected_limb.encased = CARAPACE_ENCASE_WORD

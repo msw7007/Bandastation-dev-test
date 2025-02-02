@@ -44,12 +44,16 @@
 		active_secretion = TRUE
 		chemical_consuption = initial(chemical_consuption)
 		last_safe_zone_check = world.time
+		owner.visible_message(span_warning("Рот [owner] замирает, переставая выдыхать воздух!"))
+		SEND_SIGNAL(src, COMSIG_ORGAN_CHANGE_CHEM_CONSUPTION, chemical_consuption)
 	else
 		switch_mode_off()
 
 /obj/item/organ/lungs/serpentid/proc/switch_mode_off()
 	active_secretion = FALSE
 	chemical_consuption = 0
+	owner.visible_message(span_notice("Из рта [owner] снова начинает исходить воздух."))
+	SEND_SIGNAL(src, COMSIG_ORGAN_CHANGE_CHEM_CONSUPTION, chemical_consuption)
 
 /obj/item/organ/lungs/serpentid/switch_mode(force_off = FALSE)
 	. = ..()
@@ -81,7 +85,8 @@
 			owner.reagents.add_reagent("salbutamol", salbutamol_production)
 
 		// Если Серпентид выделяет вещества, но среда опасна и не активен "болон" - дышать через мешок
-		if(danger_air && !owner.internal)
+		if(danger_air &&  !ispath(owner.internal, /obj/item/tank/internals/oxygen/))
+			owner.internal = null //Необходимо для сброса баллона и переключения дыхания на мешок
 			owner.internal = serpentid_vault
 
 		// Если Серпентид выделяет вещества, но среда не опасна и с момента последней проверки на безопасность дыхание прошло более 10 секунд - прекращение выделения
@@ -89,9 +94,12 @@
 		if(safe_zone_timer > SERPENTID_LUNGS_SAFE_TIMER && !danger_air)
 			switch_mode_off()
 
+	else
+		if(owner.internal == serpentid_vault)
+			owner.internal = null
 	// Если Серпентид не выделяет вещества, и среда опасна и он без сознания - начать выделять вещества
 	if(danger_air && (owner.stat == UNCONSCIOUS) && !active_secretion)
-		if(!owner.internal)
+		if(!active_secretion)
 			switch_mode_on()
 
 	// Если среда не опасна и Серпентид дышит через мешок - дышать нормально
