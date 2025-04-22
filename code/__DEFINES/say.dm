@@ -66,7 +66,12 @@
 #define MODE_CUSTOM_SAY_ERASE_INPUT "erase_input"
 /// Message is being relayed through another object
 #define MODE_RELAY "relayed"
-#define MODE_TTS_FILTERS "tts_filters" // Bandastation Addition
+
+// BANDASTATION ADDITION START - TTS
+#define MODE_TTS_FILTERS "tts_filters"
+#define MODE_TTS_SEED_OVERRIDE "tts_seed_override"
+#define MODE_TTS_MESSAGE_OVERRIDE "tts_message_override"
+// BANDASTATION ADDITION END - TTS
 
 //Spans. Robot speech, italics, etc. Applied in compose_message().
 #define SPAN_ROBOT "robot"
@@ -130,3 +135,6 @@
 ///Defines for priorities for the bubble_icon_override comp
 #define BUBBLE_ICON_PRIORITY_ACCESSORY 2
 #define BUBBLE_ICON_PRIORITY_ORGAN 1
+
+/// Sent from /atom/movable/proc/compose_message() to find an honorific. Compatible with NAME_PART_INDEX: (list/stored_name, mob/living/carbon/carbon_human)
+#define COMSIG_ID_GET_HONORIFIC "id_get_honorific"

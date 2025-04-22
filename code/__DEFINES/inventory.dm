@@ -113,6 +113,16 @@ DEFINE_BITFIELD(no_equip_flags, list(
 ///hides antennae
 #define HIDEANTENNAE (1<<15)
 
+//Bitflags for hair appendage zones
+#define HAIR_APPENDAGE_FRONT (1<<0)
+#define HAIR_APPENDAGE_LEFT (1<<1)
+#define HAIR_APPENDAGE_RIGHT (1<<2)
+#define HAIR_APPENDAGE_REAR (1<<3)
+#define HAIR_APPENDAGE_TOP (1<<4)
+#define HAIR_APPENDAGE_HANGING_FRONT (1<<5)
+#define HAIR_APPENDAGE_HANGING_REAR (1<<6)
+#define HAIR_APPENDAGE_ALL (HAIR_APPENDAGE_FRONT|HAIR_APPENDAGE_LEFT|HAIR_APPENDAGE_RIGHT|HAIR_APPENDAGE_REAR|HAIR_APPENDAGE_TOP|HAIR_APPENDAGE_HANGING_FRONT|HAIR_APPENDAGE_HANGING_REAR)
+
 //bitflags for clothing coverage - also used for limbs
 #define HEAD (1<<0)
 #define CHEST (1<<1)
@@ -135,9 +145,9 @@ DEFINE_BITFIELD(no_equip_flags, list(
 //defines for the index of hands
 #define LEFT_HANDS 1
 #define RIGHT_HANDS 2
-/// Checks if the value is "left" - same as ISEVEN, but used primarily for hand or foot index contexts
+/// Checks if the value is "right" - same as ISEVEN, but used primarily for hand or foot index contexts
 #define IS_RIGHT_INDEX(value) (value % 2 == 0)
-/// Checks if the value is "right" - same as ISODD, but used primarily for hand or foot index contexts
+/// Checks if the value is "left" - same as ISODD, but used primarily for hand or foot index contexts
 #define IS_LEFT_INDEX(value) (value % 2 != 0)
 
 //flags for female outfits: How much the game can safely "take off" the uniform without it looking weird
@@ -309,18 +319,20 @@ GLOBAL_LIST_INIT(tool_items, list(
 ))
 
 /// String for items placed into the left pocket.
-#define LOCATION_LPOCKET "in your left pocket"
+#define LOCATION_LPOCKET "в левом кармане"
 /// String for items placed into the right pocket
-#define LOCATION_RPOCKET "in your right pocket"
+#define LOCATION_RPOCKET "в правом кармане"
 /// String for items placed into the backpack.
-#define LOCATION_BACKPACK "in your backpack"
+#define LOCATION_BACKPACK "в сумке"
 /// String for items placed into the hands.
-#define LOCATION_HANDS "in your hands"
+#define LOCATION_HANDS "в руках"
 /// String for items placed in the glove slot.
-#define LOCATION_GLOVES "on your hands"
+#define LOCATION_GLOVES "на руках"
 /// String for items placed in the eye/glasses slot.
-#define LOCATION_EYES "covering your eyes"
+#define LOCATION_EYES "на глазах"
 /// String for items placed on the head/hat slot.
-#define LOCATION_HEAD "on your head"
+#define LOCATION_HEAD "на голове"
 /// String for items placed in the neck slot.
-#define LOCATION_NECK "around your neck"
+#define LOCATION_NECK "на шее"
+/// String for items placed in the id slot
+#define LOCATION_ID "в кармашке ID карты"

@@ -6,7 +6,6 @@
 
 SUBSYSTEM_DEF(tts220)
 	name = "Text-to-Speech 220"
-	init_order = INIT_ORDER_DEFAULT
 	wait = 0.5 SECONDS
 	runlevels = RUNLEVEL_LOBBY | RUNLEVELS_DEFAULT
 
@@ -39,7 +38,7 @@ SUBSYSTEM_DEF(tts220)
 	VAR_PRIVATE/tts_rrps = 0
 	VAR_PRIVATE/tts_rrps_counter = 0
 
-	VAR_PRIVATE/is_enabled = TRUE
+	var/is_enabled = TRUE
 	/// List of all available TTS seeds
 	var/list/datum/tts_seed/tts_seeds = list()
 	/// List of all available TTS providers
@@ -386,9 +385,9 @@ SUBSYSTEM_DEF(tts220)
 /datum/controller/subsystem/tts220/proc/output_tts(atom/speaker, mob/listener, filename2play, is_local = TRUE, preSFX = null, postSFX = null)
 	var/volume
 	if(findtext(filename2play, "radio"))
-		volume = listener?.client?.prefs?.read_preference(/datum/preference/numeric/sound_tts_volume_radio)
+		volume = listener?.client?.prefs?.read_preference(/datum/preference/numeric/volume/sound_tts_volume_radio)
 	else
-		volume = listener?.client?.prefs?.read_preference(/datum/preference/numeric/sound_tts_volume)
+		volume = listener?.client?.prefs?.read_preference(/datum/preference/numeric/volume/sound_tts_volume)
 
 	if(!volume)
 		return

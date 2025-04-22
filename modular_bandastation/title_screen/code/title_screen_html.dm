@@ -5,7 +5,7 @@
  */
 /datum/title_screen/proc/get_title_html(client/viewer, mob/user, styles)
 	var/screen_image_url = SSassets.transport.get_asset_url(asset_cache_item = screen_image)
-	var/datum/asset/spritesheet/sheet = get_asset_datum(/datum/asset/spritesheet/chat)
+	var/datum/asset/spritesheet_batched/sheet = get_asset_datum(/datum/asset/spritesheet_batched/chat)
 	var/mob/dead/new_player/player = user
 	var/list/html = list()
 	html += {"
@@ -25,6 +25,7 @@
 	"}
 
 	if(screen_image_url)
+		html += {"<img id="screen_blur" class="bg bg-blur" src="[screen_image_url]" alt="Загрузка..." onerror="fix_image()">"}
 		html += {"<img id="screen_image" class="bg" src="[screen_image_url]" alt="Загрузка..." onerror="fix_image()">"}
 
 	html += {"<input type="checkbox" id="hide_menu">"}
@@ -78,7 +79,7 @@
 			var/traitID = replacetext(replacetext("[trait.type]", "/datum/station_trait/job/", ""), "/", "-")
 			var/assigned = LAZYFIND(trait.lobby_candidates, player)
 			html += {"
-				<a id="lobby-trait-[number]" class="lobby_button lobby_element" href='byond://?src=[REF(user)];trait_signup=[trait.name];id=[number]'>
+				<a id="lobby-trait-[number]" class="lobby_button lobby_element" href='byond://?src=[REF(player)];trait_signup=[trait.name];id=[number]'>
 					<div class="toggle">
 						<img class="pixelated default indicator trait_active [assigned ? "" : "hidden"]" src="[SSassets.transport.get_asset_url(asset_name = "lobby_active.png")]">
 						<img class="pixelated default indicator trait_disabled [!assigned ? "" : "hidden"]" src="[SSassets.transport.get_asset_url(asset_name = "lobby_disabled.png")]">
@@ -94,7 +95,7 @@
 
 		html += {"</div>"}
 
-	html += {"<div id="lobby_admin" class="lobby_buttons-right invisible">"}
+	html += {"<div id="lobby_admin" class="lobby_buttons-right [check_rights_for(viewer, R_ADMIN|R_DEBUG) ? "" : "invisible"]">"}
 	html += create_icon_button(player, "start_now", "Запустить раунд", "right", SSticker && SSticker.current_state <= GAME_STATE_PREGAME)
 	html += create_icon_button(player, "delay", "Отложить начало раунда", "right", SSticker && SSticker.current_state <= GAME_STATE_PREGAME)
 	html += create_icon_button(player, "notice", "Оставить уведомление", "right")
@@ -112,10 +113,7 @@
 	html += {"
 		<script language="JavaScript">
 			function call_byond(href, value) {
-				const request = new XMLHttpRequest();
-				const url = "?src=[REF(player)];" + href + "=" + value;
-				request.open("GET", url);
-				request.send();
+				window.location = `byond://?src=[REF(player)];${href}=${value}`
 			}
 
 			let ready_int = 0;
@@ -210,9 +208,11 @@
 
 			let image_src;
 			const image_container = document.getElementById("screen_image");
+			const image_blur_container = document.getElementById("screen_blur");
 			function update_image(image) {
 				image_src = image;
 				image_container.src = image_src;
+				image_blur_container.src = image_src;
 			}
 
 			let attempts = 0;

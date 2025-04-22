@@ -211,7 +211,7 @@ GLOBAL_VAR_INIT(revolutionary_win, FALSE)
 	)
 	required_candidates = 1
 	weight = 3
-	cost = 10
+	cost = 16
 	scaling_cost = 9
 	requirements = list(101,101,60,30,30,25,20,15,10,10)
 	antag_cap = list("denominator" = 24)
@@ -410,7 +410,7 @@ GLOBAL_VAR_INIT(revolutionary_win, FALSE)
 	requirements = list(90,90,90,80,60,40,30,20,10,10)
 	flags = HIGH_IMPACT_RULESET
 	antag_cap = list("denominator" = 18, "offset" = 1)
-	ruleset_lazy_templates = list(LAZY_TEMPLATE_KEY_NUKIEBASE)
+	//ruleset_lazy_templates = list(LAZY_TEMPLATE_KEY_NUKIEBASE) // BANDASTATION EDIT - STORYTELLER
 	var/required_role = ROLE_NUCLEAR_OPERATIVE
 	var/datum/team/nuclear/nuke_team
 	///The job type to dress up our nuclear operative as.
@@ -606,7 +606,7 @@ GLOBAL_VAR_INIT(revolutionary_win, FALSE)
 	log_game("Starting a round of extended.")
 	SSdynamic.spend_roundstart_budget(SSdynamic.round_start_budget)
 	SSdynamic.spend_midround_budget(SSdynamic.mid_round_budget)
-	SSdynamic.threat_log += "[worldtime2text()]: Extended ruleset set threat to 0."
+	SSdynamic.threat_log += "[gameTimestamp()]: Extended ruleset set threat to 0."
 	return TRUE
 
 //////////////////////////////////////////////

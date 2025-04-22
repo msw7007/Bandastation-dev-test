@@ -334,22 +334,22 @@
 				// At lower pp, give out a little warning
 				clear_mood_event("smell")
 				if(prob(5))
-					to_chat(src, span_notice("There is an unpleasant smell in the air."))
+					to_chat(src, span_notice("Вы ловите в воздухе неприятный запах."))
 			if(5 to 20)
 				//At somewhat higher pp, warning becomes more obvious
 				if(prob(15))
-					to_chat(src, span_warning("You smell something horribly decayed inside this room."))
+					to_chat(src, span_warning("Вы ловите в комнате запах чего-то ужасно разложившегося."))
 					add_mood_event("smell", /datum/mood_event/disgust/bad_smell)
 			if(15 to 30)
 				//Small chance to vomit. By now, people have internals on anyway
 				if(prob(5))
-					to_chat(src, span_warning("The stench of rotting carcasses is unbearable!"))
+					to_chat(src, span_warning("Вонь от гниющих туш невыносима!"))
 					add_mood_event("smell", /datum/mood_event/disgust/nauseating_stench)
 					vomit(VOMIT_CATEGORY_DEFAULT)
 			if(30 to INFINITY)
 				//Higher chance to vomit. Let the horror start
 				if(prob(25))
-					to_chat(src, span_warning("The stench of rotting carcasses is unbearable!"))
+					to_chat(src, span_warning("Вонь от гниющих туш невыносима!"))
 					add_mood_event("smell", /datum/mood_event/disgust/nauseating_stench)
 					vomit(VOMIT_CATEGORY_DEFAULT)
 			else
@@ -686,22 +686,29 @@
 //Stomach//
 ///////////
 
-/mob/living/carbon/get_fullness()
-	var/fullness = nutrition
+/mob/living/carbon/get_fullness(only_consumable)
+	. = ..()
 
 	var/obj/item/organ/stomach/belly = get_organ_slot(ORGAN_SLOT_STOMACH)
 	if(!belly) //nothing to see here if we do not have a stomach
-		return fullness
+		return .
 
-	for(var/bile in belly.reagents.reagent_list)
-		var/datum/reagent/bits = bile
-		if(istype(bits, /datum/reagent/consumable))
-			var/datum/reagent/consumable/goodbit = bile
-			fullness += goodbit.get_nutriment_factor(src) * goodbit.volume / goodbit.metabolization_rate
+	for(var/datum/reagent/bits as anything in belly.reagents.reagent_list)
+		// hack to get around stomachs having 5u stomach lining reagent ugugugu
+		var/effective_volume = bits.volume
+		if(belly.food_reagents[bits.type])
+			effective_volume -= belly.food_reagents[bits.type]
+		if(effective_volume <= 0)
 			continue
-		fullness += 0.6 * bits.volume / bits.metabolization_rate //not food takes up space
+		if(istype(bits, /datum/reagent/consumable))
+			var/datum/reagent/consumable/goodbit = bits
+			. += goodbit.get_nutriment_factor(src) * effective_volume / goodbit.metabolization_rate
+			continue
+		if(!only_consumable)
+			continue
+		. += 0.6 * effective_volume / bits.metabolization_rate //not food takes up space
 
-	return fullness
+	return .
 
 /mob/living/carbon/has_reagent(reagent, amount = -1, needs_metabolizing = FALSE)
 	. = ..()
@@ -771,7 +778,7 @@
 /*
  * The mob is having a heart attack
  *
- * NOTE: this is true if the mob has no heart and needs one, which can be suprising,
+ * NOTE: this is true if the mob has no heart and needs one, which can be surprising,
  * you are meant to use it in combination with can_heartattack for heart attack
  * related situations (i.e not just cardiac arrest)
  */

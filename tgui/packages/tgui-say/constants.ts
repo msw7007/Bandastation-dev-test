@@ -1,15 +1,15 @@
 /** Window sizes in pixels */
-export enum WINDOW_SIZES {
-  small = 30,
-  medium = 50,
-  large = 70,
-  width = 231,
+export enum WindowSize {
+  Small = 30,
+  Medium = 50,
+  Large = 70,
+  Width = 231,
 }
 
 /** Line lengths for autoexpand */
-export enum LINE_LENGTHS {
-  small = 22,
-  medium = 45,
+export enum LineLength {
+  Small = 20,
+  Medium = 40,
 }
 
 /**
@@ -17,21 +17,20 @@ export enum LINE_LENGTHS {
  * Displays the name in the left button, tags a css class.
  */
 export const RADIO_PREFIXES = {
-  ':a ': 'Рой',
-  ':b ': 'вв',
-  ':c ': 'Ком',
-  ':e ': 'Инж',
-  ':g ': 'Ген',
-  ':m ': 'Мед',
-  ':n ': 'Иссл',
-  ':o ': 'ИИ',
-  ':p ': 'Разв',
-  ':s ': 'Без',
-  ':l ': 'Юр',
-  ':t ': 'Синд',
-  ':u ': 'Снаб',
-  ':v ': 'Обсл',
-  ':y ': 'ЦК',
+  ':a ': 'Hive',
+  ':b ': 'io',
+  ':c ': 'Cmd',
+  ':e ': 'Engi',
+  ':g ': 'Cling',
+  ':m ': 'Med',
+  ':n ': 'Sci',
+  ':o ': 'AI',
+  ':p ': 'Ent',
+  ':s ': 'Sec',
+  ':t ': 'Synd',
+  ':u ': 'Supp',
+  ':v ': 'Svc',
+  ':y ': 'CCom',
   // BANDASTATION ADDITION START
   ':ф ': 'Рой',
   ':и ': 'вв',

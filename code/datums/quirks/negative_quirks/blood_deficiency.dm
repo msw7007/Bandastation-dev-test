@@ -1,11 +1,11 @@
 /datum/quirk/blooddeficiency
 	name = "Blood Deficiency"
-	desc = "Your body can't produce enough blood to sustain itself."
+	desc = "Ваш организм не может вырабатывать достаточно крови для поддержания жизнедеятельности."
 	icon = FA_ICON_TINT
 	value = -8
-	gain_text = span_danger("You feel your vigor slowly fading away.")
-	lose_text = span_notice("You feel vigorous again.")
-	medical_record_text = "Patient requires regular treatment for blood loss due to low production of blood."
+	gain_text = span_danger("Вы чувствуете, как силы покидают вас.")
+	lose_text = span_notice("Вы снова полны сил.")
+	medical_record_text = "Пациенту требуется регулярное лечение при кровопотере из-за низкой выработки крови."
 	hardcore_value = 8
 	mail_goodies = list(/obj/item/reagent_containers/blood/o_minus) // universal blood type that is safe for all
 	/// Minimum amount of blood the paint is set to
@@ -20,6 +20,14 @@
 
 /datum/quirk/blooddeficiency/remove()
 	UnregisterSignal(quirk_holder, list(COMSIG_HUMAN_ON_HANDLE_BLOOD, COMSIG_SPECIES_GAIN))
+
+/datum/quirk/blooddeficiency/is_species_appropriate(datum/species/mob_species)
+	var/datum/species_traits = GLOB.species_prototypes[mob_species].inherent_traits
+	if(TRAIT_NOBLOOD in species_traits)
+		return FALSE
+	if(TRAIT_NOBREATH in species_traits)
+		return FALSE
+	return ..()
 
 /datum/quirk/blooddeficiency/proc/lose_blood(datum/source, seconds_per_tick, times_fired)
 	SIGNAL_HANDLER

@@ -8,7 +8,7 @@
 /mob/living/silicon/pai/ui_data(mob/user)
 	var/list/data = list()
 	data["door_jack"] = hacking_cable
-	data["image"] = card.emotion_icon
+	data["screen_image_interface_icon"] = card.screen_image.interface_icon
 	data["installed"] = installed_software
 	data["ram"] = ram
 	return data
@@ -48,7 +48,7 @@
 			ai_roster()
 			return TRUE
 		if("Crew Monitor")
-			GLOB.crewmonitor.show(usr, src)
+			crew_monitor.attack_self(src) // BANDASTATION REPLACEMENT: GLOB.crewmonitor.show(usr, src)
 			return TRUE
 		if("Digital Messenger")
 			modularInterface?.interact(usr)
@@ -135,16 +135,16 @@
  */
 /mob/living/silicon/pai/proc/change_image()
 	var/list/possible_choices = list()
-	for(var/face_option in possible_overlays)
+	for(var/datum/pai_screen_image/screen_option as anything in subtypesof(/datum/pai_screen_image))
 		var/datum/radial_menu_choice/choice = new
-		choice.name = face_option
-		choice.image = image(icon = card.icon, icon_state = "pai-[face_option]")
-		possible_choices[face_option] += choice
+		choice.name = screen_option.name
+		choice.image = image(icon = screen_option.icon, icon_state = screen_option.icon_state)
+		possible_choices[screen_option] += choice
 	var/atom/anchor = get_atom_on_turf(src)
 	var/new_image = show_radial_menu(src, anchor, possible_choices, custom_check = CALLBACK(src, PROC_REF(check_menu), anchor), radius = 40, require_near = TRUE)
 	if(isnull(new_image))
 		return FALSE
-	card.emotion_icon = new_image
+	card.screen_image = new_image
 	card.update_appearance()
 	return TRUE
 

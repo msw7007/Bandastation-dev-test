@@ -217,7 +217,7 @@
 
 /datum/station_trait/birthday/proc/announce_birthday()
 	report_message = "We here at Nanotrasen would all like to wish [birthday_person ? birthday_person_name : "Employee Name"] a very happy birthday."
-	priority_announce("Happy birthday to [birthday_person ? birthday_person_name : "Employee Name"]! Nanotrasen wishes you a very happy [birthday_person ? thtotext(birthday_person.age + 1) : "255th"] birthday.")
+	priority_announce("Поздравляем с днём рождения [birthday_person ? birthday_person_name : "Employee Name"]! Nanotrasen желает счастливого [birthday_person ? "[birthday_person.age + 1]-го" : "255-го"] Дня Рождения.")
 	if(birthday_person)
 		playsound(birthday_person, 'sound/items/party_horn.ogg', 50)
 		birthday_person.add_mood_event("birthday", /datum/mood_event/birthday)
@@ -507,7 +507,10 @@
 /obj/item/storage/box/stickers/skub/Initialize(mapload)
 	. = ..()
 	atom_storage.max_slots = 3
-	atom_storage.exception_hold = typecacheof(list(/obj/item/skub, /obj/item/clothing/suit/costume/wellworn_shirt/skub))
+	atom_storage.set_holdable(exception_hold_list = list(
+		/obj/item/skub,
+		/obj/item/clothing/suit/costume/wellworn_shirt/skub,
+	))
 
 /obj/item/storage/box/stickers/skub/PopulateContents()
 	new /obj/item/skub(src)
@@ -522,7 +525,7 @@
 
 /obj/item/storage/box/stickers/anti_skub/Initialize(mapload)
 	. = ..()
-	atom_storage.exception_hold = typecacheof(list(/obj/item/clothing/suit/costume/wellworn_shirt/skub))
+	atom_storage.set_holdable(exception_hold_list = /obj/item/clothing/suit/costume/wellworn_shirt/skub)
 
 /obj/item/storage/box/stickers/anti_skub/PopulateContents()
 	for(var/i in 1 to 4)
@@ -595,3 +598,15 @@
 /datum/station_trait/pet_day/proc/on_lobby_button_update_overlays(atom/movable/screen/lobby/button/sign_up/lobby_button, list/overlays)
 	overlays += "select_pet"
 */
+
+/// We're pulling a Jim Kramer with this one boys
+/datum/station_trait/gmm_spotlight
+	name = "GMM Economic Spotlight"
+	report_message = "This shift, the Galactic Mineral Market is doing a showcase on your crew's affulence! Every paycheck, the station newscasters will alert the crew who has the most credits."
+	trait_type = STATION_TRAIT_NEUTRAL
+	trait_to_give = STATION_TRAIT_ECONOMY_ALERTS
+	weight = 2
+	cost = STATION_TRAIT_COST_LOW
+	show_in_report = TRUE
+
+	dynamic_threat_id = "GMM Econ Spotlight"

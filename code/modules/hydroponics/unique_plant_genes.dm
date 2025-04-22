@@ -15,15 +15,16 @@
 	if(!.)
 		return
 	var/obj/item/seeds/our_seed = our_plant.get_plant_seed()
-	shield_uses = round(our_seed.potency / 20)
+	shield_uses = round(our_seed.potency / 95) // BANDASTATION EDIT - Original:  / 20)
 	//deliver us from evil o melon god
-	our_plant.AddComponent(/datum/component/anti_magic, \
-		antimagic_flags = MAGIC_RESISTANCE|MAGIC_RESISTANCE_HOLY, \
-		inventory_flags = ITEM_SLOT_HANDS, \
-		charges = shield_uses, \
-		drain_antimagic = CALLBACK(src, PROC_REF(drain_antimagic)), \
-		expiration = CALLBACK(src, PROC_REF(expire)), \
-	)
+	if(shield_uses >= 1) // BANDASTATION Addition - No more shield if potency less than 95
+		our_plant.AddComponent(/datum/component/anti_magic, \
+			antimagic_flags = MAGIC_RESISTANCE|MAGIC_RESISTANCE_HOLY, \
+			inventory_flags = ITEM_SLOT_HANDS, \
+			charges = shield_uses, \
+			drain_antimagic = CALLBACK(src, PROC_REF(drain_antimagic)), \
+			expiration = CALLBACK(src, PROC_REF(expire)), \
+		)
 
 /// When the plant our gene is hosted in is drained of an anti-magic charge.
 /datum/plant_gene/trait/anti_magic/proc/drain_antimagic(mob/user, obj/item/our_plant)
@@ -679,6 +680,14 @@
 	stank.gases[/datum/gas/miasma][MOLES] = (seed.yield + 6) * 3.5 * MIASMA_CORPSE_MOLES * seconds_per_tick // this process is only being called about 2/7 as much as corpses so this is 12-32 times a corpses
 	stank.temperature = T20C // without this the room would eventually freeze and miasma mining would be easier
 	tray_turf.assume_air(stank)
+
+/// Hard caps the yield at 5 (effectively)
+/datum/plant_gene/trait/complex_harvest
+	name = "Complex Harvest"
+	description = "Halves the maximum yield of the plant, and prevents it from benefiting from pollination's yield bonus."
+	icon = FA_ICON_SLASH
+	trait_flags = TRAIT_HALVES_YIELD|TRAIT_NO_POLLINATION
+	mutability_flags = NONE
 
 /// Starthistle's essential invasive spreading
 /datum/plant_gene/trait/invasive/galaxythistle

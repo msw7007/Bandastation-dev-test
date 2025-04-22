@@ -32,6 +32,7 @@
 		/obj/item/gun/ballistic/rifle/boltaction, //fits if you make it an obrez
 		/obj/item/gun/energy/laser/captain,
 		/obj/item/gun/energy/e_gun/hos,
+		/obj/item/gun/energy/eg_14,
 	))
 	atom_storage.open_sound = 'sound/items/handling/holster_open.ogg'
 	atom_storage.open_sound_vary = TRUE
@@ -53,6 +54,7 @@
 		/obj/item/gun/energy/recharge/ebow,
 		/obj/item/gun/energy/laser/captain,
 		/obj/item/gun/energy/e_gun/hos,
+		/obj/item/gun/energy/eg_14,
 	))
 
 /obj/item/storage/belt/holster/energy/thermal
@@ -108,6 +110,7 @@
 		/obj/item/gun/energy/laser/thermal,
 		/obj/item/gun/energy/laser/captain,
 		/obj/item/gun/energy/e_gun/hos,
+		/obj/item/gun/energy/eg_14,
 		/obj/item/gun/ballistic/rifle/boltaction, //fits if you make it an obrez
 	))
 
@@ -138,6 +141,7 @@
 	worn_icon_state = "syndicate_holster"
 	w_class = WEIGHT_CLASS_NORMAL
 	actions_types = list(/datum/action/item_action/chameleon/change/belt)
+	action_slots = ALL
 
 /obj/item/storage/belt/holster/chameleon/Initialize(mapload)
 	. = ..()
@@ -161,6 +165,7 @@
 		/obj/item/gun/energy/dueling,
 		/obj/item/gun/energy/laser/captain,
 		/obj/item/gun/energy/e_gun/hos,
+		/obj/item/gun/energy/eg_14,
 	))
 
 	atom_storage.silent = TRUE

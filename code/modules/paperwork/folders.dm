@@ -21,12 +21,13 @@
 	var/paper_overlay_state = "folder_paper"
 
 /obj/item/folder/suicide_act(mob/living/user)
-	user.visible_message(span_suicide("[user] begins filing an imaginary death warrant! It looks like [user.p_theyre()] trying to commit suicide!"))
+	user.visible_message(span_suicide("[user] begins filing an imaginary death warrant! Кажется, [user.ru_p_they()] пытается совершить самоубийство!"))
 	return OXYLOSS
 
 /obj/item/folder/Initialize(mapload)
 	update_icon()
 	. = ..()
+	AddElement(/datum/element/burn_on_item_ignition)
 
 /obj/item/folder/Destroy()
 	for(var/obj/important_thing in contents)
@@ -79,8 +80,6 @@
 	return paper_overlay
 
 /obj/item/folder/attackby(obj/item/weapon, mob/user, params)
-	if(burn_paper_product_attackby_check(weapon, user))
-		return
 	if(is_type_in_typecache(weapon, folder_insertables))
 		//Add paper, photo or documents into the folder
 		if(!user.transferItemToLoc(weapon, src))

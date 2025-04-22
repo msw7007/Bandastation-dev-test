@@ -154,7 +154,7 @@
 		adjustStaminaLoss(-stamina_recovery * seconds_per_tick, forced = TRUE)
 
 /mob/living/basic/get_default_say_verb()
-	return length(speak_emote) ? pick(speak_emote) : ..()
+	return length(speak_emote) ? ru_say_verb(pick(speak_emote)) : ..()
 
 /mob/living/basic/death(gibbed)
 	. = ..()
@@ -297,7 +297,7 @@
 			'icons/mob/effects/onfire.dmi',
 			fire_icon,
 			-HIGHEST_LAYER,
-			appearance_flags = RESET_COLOR,
+			appearance_flags = RESET_COLOR|KEEP_APART,
 		)
 
 	return GLOB.fire_appearances[fire_icon]

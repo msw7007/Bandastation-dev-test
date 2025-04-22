@@ -32,6 +32,8 @@
 	var/give_wound_treatment_bonus = FALSE
 	var/last_scan_text
 	var/scanner_busy = FALSE
+	/// Weakref to the last mob scanned by a health analyzer. Used to generate official medical reports.
+	var/datum/weakref/last_healthy_scanned
 
 /obj/item/healthanalyzer/Initialize(mapload)
 	. = ..()
@@ -97,6 +99,10 @@
 	switch (scanmode)
 		if (SCANMODE_HEALTH)
 			last_scan_text = healthscan(user, M, mode, advanced, tochat = readability_check)
+			if((M.health / M.maxHealth) > CLEAN_BILL_OF_HEALTH_RATIO)
+				last_healthy_scanned = WEAKREF(M)
+			else
+				last_healthy_scanned = null
 		if (SCANMODE_WOUND)
 			if(readability_check)
 				woundscan(user, M, src)
@@ -231,7 +237,7 @@
 						dmgreport += "<td><font color='#cc3333'>-</font></td>"
 						dmgreport += "<td><font color='#ff9933'>-</font></td>"
 						dmgreport += "</tr>"
-						dmgreport += "<tr><td colspan=6><span class='alert ml-2'>&rdsh; Physical trauma: [conditional_tooltip("Dismembered", "Reattach or replace surgically.", tochat)]</span></td></tr>"
+						dmgreport += "<tr><td colspan=6><span class='alert ml-2'>&rdsh; Физическая травма: [conditional_tooltip("Ампутирована", "Переприсоединить или заменить хирургическим путем.", tochat)]</span></td></tr>"
 						continue
 					var/has_any_embeds = length(limb.embedded_objects) >= 1
 					var/has_any_wounds = length(limb.wounds) >= 1
@@ -255,10 +261,10 @@
 							var/embedded_amt = embedded_names[embedded_name]
 							if(embedded_amt > 1)
 								displayed = "[embedded_amt]x [embedded_name]"
-							dmgreport += "<tr><td colspan=6><span class='alert ml-2'>&rdsh; Foreign object(s): [conditional_tooltip(displayed, "Use a hemostat to remove.", tochat)]</span></td></tr>"
+							dmgreport += "<tr><td colspan=6><span class='alert ml-2'>&rdsh; Инородные объекты: [conditional_tooltip(displayed, "Используйте гемостат для извлечения.", tochat)]</span></td></tr>"
 					if(has_any_wounds)
 						for(var/datum/wound/wound as anything in limb.wounds)
-							dmgreport += "<tr><td colspan=6><span class='alert ml-2'>&rdsh; Physical trauma: [conditional_tooltip("[wound.name] ([wound.severity_text()])", wound.treat_text_short, tochat)]</span></td></tr>"
+							dmgreport += "<tr><td colspan=6><span class='alert ml-2'>&rdsh; Физическая травма: [conditional_tooltip("[wound.name] ([wound.severity_text()])", wound.treat_text_short, tochat)]</span></td></tr>"
 
 			dmgreport += "</table></font>"
 			render_list += dmgreport // tables do not need extra linebreak
@@ -423,10 +429,10 @@
 		return
 	scanner_busy = TRUE
 	balloon_alert(user, "printing report...")
-	addtimer(CALLBACK(src, PROC_REF(print_report)), 2 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(print_report), user), 2 SECONDS)
 
 /obj/item/healthanalyzer/proc/print_report(mob/user)
-	var/obj/item/paper/report_paper = new(get_turf(src))
+	var/obj/item/paper/medical_report/report_paper = new(get_turf(src))
 
 	report_paper.color = "#99ccff"
 	report_paper.name = "health scan report - [station_time_timestamp()]"
@@ -436,13 +442,40 @@
 	report_paper.add_raw_text(report_text)
 	report_paper.update_appearance()
 
-	if(ismob(loc))
-		var/mob/printer = loc
-		printer.put_in_hands(report_paper)
-		balloon_alert(printer, "logs cleared")
+	user.put_in_hands(report_paper)
+	balloon_alert(user, "logs cleared")
 
+	resolve_patient_eligibility(report_paper, user)
 	report_text = list()
 	scanner_busy = FALSE
+
+/**
+ * Checks the mob and the medical report that the scanner is trying to print, checks the traits and statuses of the mob, and then resolves by true or false.
+ * Applies traits to the patient if the scanning is eligable to turn in for a bounty, with callbacks to remove after a cooldown.
+ */
+/obj/item/healthanalyzer/proc/resolve_patient_eligibility(obj/item/paper/medical_report/report_paper, mob/scanner)
+	var/mob/living/patient = last_healthy_scanned?.resolve()
+	if(!patient)
+		return FALSE
+
+	if(scanner == patient)
+		return FALSE //You can't just scan yourself.
+
+	if(HAS_TRAIT(patient, TRAIT_RECENTLY_TREATED))
+		return FALSE
+
+	report_paper.last_healthy_scanned_mob = last_healthy_scanned
+	ADD_TRAIT(patient, TRAIT_RECENTLY_TREATED, ANALYZER_TRAIT)
+	addtimer(TRAIT_CALLBACK_REMOVE(patient, RECENTLY_HEALED_COOLDOWN, ANALYZER_TRAIT), RECENTLY_HEALED_COOLDOWN)
+	return TRUE
+
+/obj/item/healthanalyzer/proc/clear_treatment(mob/living/target)
+	if(!target)
+		return
+	if(QDELETED(target))
+		return
+	REMOVE_TRAIT(target, TRAIT_RECENTLY_TREATED, ANALYZER_TRAIT)
+	return TRUE
 
 /proc/chemscan(mob/living/user, mob/living/target)
 	if(user.incapacitated)
@@ -538,7 +571,7 @@
 	var/advised = FALSE
 	for(var/limb in patient.get_wounded_bodyparts())
 		var/obj/item/bodypart/wounded_part = limb
-		render_list += "<span class='alert ml-1'><b>Warning: Physical trauma[LAZYLEN(wounded_part.wounds) > 1? "s" : ""] detected in [wounded_part.name]</b>"
+		render_list += "<span class='alert ml-1'><b>ВНИМАНИЕ: Физическ[LAZYLEN(wounded_part.wounds) > 1? "ие травмы обнаружены" : "ая травма обнаружена"]  в [wounded_part.declent_ru(PREPOSITIONAL)]</b>"
 		for(var/limb_wound in wounded_part.wounds)
 			var/datum/wound/current_wound = limb_wound
 			render_list += "<div class='ml-2'>[simple_scan ? current_wound.get_simple_scanner_description() : current_wound.get_scanner_description()]</div><br>"
@@ -669,7 +702,7 @@
 
 /obj/item/healthanalyzer/simple/disease
 	name = "disease state analyzer"
-	desc = "Another of MeLo-Tech's dubiously useful medsci scanners, the disease analyzer is a pretty rare find these days - NT found out that giving their hospitals the lowest-common-denominator pandemic equipment resulted in too much financial loss of life to be profitable. There's rumours that the inbuilt AI is jealous of the first aid analyzer's success."
+	desc = "Another of MeLo-Tech's dubiously useful medsci scanners, the disease analyzer is a pretty rare find these days - NT found out that giving their hospitals the lowest-common-denominator pandemic equipment resulted in too much financial loss of life to be profitable. There are rumours that the inbuilt AI is jealous of the first aid analyzer's success."
 	icon_state = "disease_aid"
 	mode = SCANNER_NO_MODE
 	encouragements = list("encourages you to take your medication", "briefly displays a spinning cartoon heart", "reasures you about your condition", \
@@ -718,6 +751,18 @@
 		to_chat(user, span_notice(render.Join("")))
 		scanner.emotion = AID_EMOTION_WARN
 		playsound(scanner, 'sound/machines/beep/twobeep.ogg', 50, FALSE)
+
+/obj/item/paper/medical_report
+	color = "#99ccff"
+	desc = "An official medical bill of health generated by a computerized medical scanner."
+	/// A reference to a mob's weakref that was last scanned by the medical scanner.
+	var/datum/weakref/last_healthy_scanned_mob
+
+/obj/item/paper/medical_report/examine(mob/user)
+	. = ..()
+	if(last_healthy_scanned_mob)
+		. += span_notice("This medical report is applicable for medical bounties.")
+
 
 #undef SCANMODE_HEALTH
 #undef SCANMODE_WOUND

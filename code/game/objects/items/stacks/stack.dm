@@ -47,7 +47,7 @@
 	/// Does this stack require a unique girder in order to make a wall?
 	var/has_unique_girder = FALSE
 	/// What typepath table we create from this stack
-	var/obj/structure/table/tableVariant
+	var/obj/structure/table/table_type
 	/// What typepath stairs do we create from this stack
 	var/obj/structure/stairs/stairs_type
 	/// If TRUE, we'll use a radial instead when displaying recipes
@@ -200,20 +200,26 @@
 		return
 	if(singular_name)
 		if(get_amount()>1)
-			. += "There are [get_amount()] [singular_name]\s in the stack."
+			. += "Внутри стопки [get_amount()] единиц[declension_ru(get_amount(), "а", "ы", "")] [declent_ru(GENITIVE)]."
 		else
-			. += "There is [get_amount()] [singular_name] in the stack."
+			. += "Внутри стопки [get_amount()] единица [declent_ru(GENITIVE)]."
 	else if(get_amount()>1)
-		. += "There are [get_amount()] in the stack."
+		. += "Внутри стопки [get_amount()] единиц[declension_ru(get_amount(), "а", "ы", "")] [declent_ru(GENITIVE)]."
 	else
-		. += "There is [get_amount()] in the stack."
-	. += span_notice("<b>Right-click</b> with an empty hand to take a custom amount.")
+		. += "Внутри стопки [get_amount()] единица [declent_ru(GENITIVE)]."
+	. += span_notice("<b>ПКМ</b> пустой рукой, чтобы взять определенное количество.")
 
 /obj/item/stack/proc/get_amount()
 	if(is_cyborg)
 		. = round(source?.energy / cost)
 	else
 		. = (amount)
+
+/// Gets the table type we make, accounting for potential exceptions.
+/obj/item/stack/proc/get_table_type()
+	if(ispath(table_type, /obj/structure/table/greyscale) && isnull(material_type))
+		return // This table type breaks without a material type.
+	return table_type
 
 /**
  * Builds all recipes in a given recipe list and returns an association list containing them

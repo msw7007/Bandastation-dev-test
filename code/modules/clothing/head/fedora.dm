@@ -1,10 +1,10 @@
 /obj/item/clothing/head/fedora
 	name = "fedora"
+	desc = "A really cool hat if you're a mobster. A really lame hat if you're not."
+	icon_state = "fedora"
 	icon = 'icons/obj/clothing/head/hats.dmi'
 	worn_icon = 'icons/mob/clothing/head/hats.dmi'
-	icon_state = "fedora"
-	inhand_icon_state = "fedora"
-	desc = "A really cool hat if you're a mobster. A really lame hat if you're not."
+	hair_mask = /datum/hair_mask/standard_hat_low
 
 /obj/item/clothing/head/fedora/Initialize(mapload)
 	. = ..()
@@ -26,7 +26,7 @@
 		return
 	var/mob/living/carbon/human/H = user
 	user.visible_message(span_suicide("[user] is donning [src]! It looks like [user.p_theyre()] trying to be nice to girls."))
-	user.say("M'lady.", forced = "fedora suicide")
+	user.say("Миледи.", forced = "fedora suicide")
 	sleep(1 SECONDS)
 	H.facial_hairstyle = "Neckbeard"
 	return BRUTELOSS
@@ -42,6 +42,14 @@
 
 /obj/item/clothing/head/fedora/beige/press
 	name = "press fedora"
-	desc = "An beige fedora with a piece of paper saying \"PRESS\" stuck in its rim."
+	desc = "A beige fedora with a piece of paper saying \"PRESS\" stuck in its rim."
 	icon_state = "fedora_press"
 	inhand_icon_state = null
+
+/obj/item/clothing/head/fedora/greyscale
+	icon_state = "fedora_greyscale"
+	inhand_icon_state = null
+	greyscale_colors = "#F0DAB4#794D2E"
+	greyscale_config = /datum/greyscale_config/fedora
+	greyscale_config_worn = /datum/greyscale_config/fedora/worn
+	flags_1 = IS_PLAYER_COLORABLE_1
