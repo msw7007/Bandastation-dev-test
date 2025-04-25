@@ -6,3 +6,4 @@
 #include "code/status_effects.dm"
 #include "code/surgery/carapace_steps.dm"
 #include "code/surgery/carapace_operations.dm"
+#include "code/surgery/surgery_fail_chance.dm"
