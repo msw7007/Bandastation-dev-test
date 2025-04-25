@@ -14,7 +14,7 @@
 /obj/item/organ/liver/serpentid/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/organ_toxin_damage, 0.1, 0.5)
-	AddComponent(/datum/component/hunger_organ)
+	AddComponent(/datum/component/organ_hunger)
 	AddComponent(/datum/component/organ_action, radial_action_state, radial_action_icon)
 
 /obj/item/organ/liver/serpentid/on_life()

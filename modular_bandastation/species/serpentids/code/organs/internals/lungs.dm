@@ -28,7 +28,7 @@
 	. = ..()
 	AddComponent(/datum/component/organ_toxin_damage, 0.05)
 	AddComponent(/datum/component/organ_action, radial_action_state, radial_action_icon)
-	AddComponent(/datum/component/hunger_organ)
+	AddComponent(/datum/component/organ_hunger)
 
 /obj/item/tank/internals/oxygen/serpentid_vault_tank
 	name = "serpentid oxygen vault"

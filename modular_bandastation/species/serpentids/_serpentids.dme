@@ -5,12 +5,12 @@
 #include "code/_define/_alerts.dm"
 
 //Компоненты
-#include "code/components/ability_compact.dm"
-#include "code/components/ability_hunger.dm"
 #include "code/components/ability_liftweight.dm"
-#include "code/components/ability_heart_auto_defib.dm"
 #include "code/components/armor_carapace.dm"
 #include "code/components/armor_shell.dm"
+#include "code/components/organ_action.dm"
+#include "code/components/organ_hugner.dm"
+#include "code/components/defib_heart_hunger.dm"
 #include "code/components/organs_attack.dm"
 #include "code/components/organs_toxins.dm"
 

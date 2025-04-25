@@ -69,7 +69,7 @@ GLOBAL_LIST_INIT(last_names_tajaran, world.file2list("strings/names/last_tajaran
 	tajaran_facial_hair_list = init_sprite_accessory_subtypes(/datum/sprite_accessory/tajaran_facial_hair, add_blank = TRUE)[DEFAULT_SPRITE_LIST]
 	// serpentids
 	tails_list_serpentid = init_sprite_accessory_subtypes(/datum/sprite_accessory/tails/serpentid, add_blank = FALSE)[DEFAULT_SPRITE_LIST]
-	serpenblades = init_sprite_accessory_subtypes(/datum/sprite_accessory/serpentid_blades, add_blank = FALSE)[DEFAULT_SPRITE_LIST]
+	//serpenblades = init_sprite_accessory_subtypes(/datum/sprite_accessory/serpentid_blades, add_blank = FALSE)[DEFAULT_SPRITE_LIST]
 
 /datum/controller/subsystem/accessories/PreInit()
 	..()

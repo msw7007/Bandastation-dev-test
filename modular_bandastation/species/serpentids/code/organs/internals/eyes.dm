@@ -4,7 +4,7 @@
 	icon = 'modular_bandastation/species/serpentids/icons/organs.dmi'
 	desc = "A large looking eyes with some chemical enchanments."
 	icon_state = "eyes"
-	actions_types = list(/datum/action/item_action/organ_action/toggle)
+	actions_types = list(/datum/action/item_action/organ_action/switch_mode)
 	flash_protect = FLASH_PROTECTION_HYPER_SENSITIVE
 	tint = FLASH_PROTECTION_NONE
 	var/chemical_consuption = SERPENTID_ORGAN_HUNGER_EYES
@@ -16,7 +16,7 @@
 /obj/item/organ/eyes/serpentid/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/organ_toxin_damage, 0.02)
-	AddComponent(/datum/component/hunger_organ)
+	AddComponent(/datum/component/organ_hunger)
 	AddComponent(/datum/component/organ_action, radial_action_state, radial_action_icon)
 
 /obj/item/organ/eyes/serpentid/on_life()
@@ -42,7 +42,7 @@
 		vision_adjust, vision_adjust, vision_chem)
 
 	var/datum/client_colour/monochrome/serpentid_hungry/new_effect = new (owner)
-	new_effect.colour = vision_matrix
+	new_effect.color = vision_matrix
 	owner.add_client_colour(new_effect)
 
 /obj/item/organ/eyes/serpentid/switch_mode(force_off = FALSE)
@@ -61,4 +61,4 @@
 	SEND_SIGNAL(src, COMSIG_ORGAN_CHANGE_CHEM_CONSUPTION, chemical_consuption)
 
 /datum/client_colour/monochrome/serpentid_hungry
-	colour = COLOR_MATRIX_GRAYSCALE
+	color = COLOR_MATRIX_GRAYSCALE

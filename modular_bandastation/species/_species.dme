@@ -1,7 +1,6 @@
 #include "_species.dm"
 
 #include "code/human/sprite_accessories/serpentids.dm"
-#include "code/human/sprite_accessories/vulpkanin.dm"
 #include "code/human/sprite_accessories/hair.dm"
 
 #include "code/_defines.dm"
@@ -29,10 +28,7 @@
 #include "code/human/sprite_accessories/tajaran/tajaran_tail_markings.dm"
 #include "code/human/sprite_accessories/tajaran/tajaran_tails.dm"
 
-#include "code/human/sprite_accessories/hair.dm"
 #include "code/human/carbon.dm"
-
-#include "code/human/species_type/vulpkanin.dm"
 
 
 #include "code/preferences/species_features/vulpkanin.dm"

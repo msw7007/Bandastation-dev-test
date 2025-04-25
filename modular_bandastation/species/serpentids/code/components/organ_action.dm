@@ -75,3 +75,16 @@
 						action_candidate.Grant(organ.owner)
 				break
 
+//Расширение компонентов - создание нового подкласса для переключения режима работы органов
+/datum/action/item_action/organ_action/switch_mode
+	name = "Switch organ"
+
+/datum/action/item_action/organ_action/switch_mode/New(Target)
+	..()
+	var/obj/item/organ/organ_target = target
+	name = "Switch mode  of [organ_target.name]"
+
+/datum/action/item_action/organ_action/switch_mode/do_effect(trigger_flags)
+	var/obj/item/organ/organ_object = target
+	organ_object.switch_mode()
+	return TRUE
