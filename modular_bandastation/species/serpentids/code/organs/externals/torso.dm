@@ -4,7 +4,6 @@
 	limb_id = SPECIES_SERPENTID
 	is_dimorphic = TRUE
 	wing_types = list(/obj/item/organ/wings/functional/dragon)
-	species_bodytype = SPECIES_SERPENTID
 	var/min_broken_damage = 40
 	//icon =
 	actions_types = list(/datum/action/item_action/organ_action/toggle)

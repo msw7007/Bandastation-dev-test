@@ -4,9 +4,6 @@
 #include "code/human/sprite_accessories/hair.dm"
 
 #include "code/_globalvars/lists.dm"
-#include "code/_defines.dm"
-#include "code/dna.dm"
-#include "code/language.dm"
 
 #include "code/clothing/items.dm"
 
@@ -14,6 +11,10 @@
 #include "code/human/species_type/skrell.dm"
 #include "code/human/species_type/tajaran.dm"
 #include "code/human/species_type/vulpkanin.dm"
+
+#include "code/language/qurvolious.dm"
+#include "code/language/siiktajr.dm"
+#include "code/language/canilunzt.dm"
 
 #include "code/human/sprite_accessories/skrell/skrell_head_tentacles.dm"
 
@@ -32,10 +33,6 @@
 #include "code/human/sprite_accessories/tajaran/tajaran_tails.dm"
 
 #include "code/human/carbon.dm"
-
-
-#include "code/preferences/species_features/vulpkanin.dm"
-#include "code/preferences/species_features/tajaran.dm"
 
 #include "code/reagents/mutation.dm"
 

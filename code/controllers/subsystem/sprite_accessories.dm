@@ -77,6 +77,10 @@ SUBSYSTEM_DEF(accessories) // just 'accessories' for brevity
 
 	// Skrell
 	var/list/skrell_head_tentacles_list
+
+	// Serpentids
+	var/list/tails_list_serpentid
+	#define isserpentid(A) (is_species(A, /datum/species/serpentid))
 	/// BANDASTATION ADDITION END - Species
 
 /datum/controller/subsystem/accessories/PreInit() // this stuff NEEDS to be set up before GLOB for preferences and stuff to work so this must go here. sorry
@@ -153,6 +157,10 @@ SUBSYSTEM_DEF(accessories) // just 'accessories' for brevity
 
 	// skrell
 	skrell_head_tentacles_list = init_sprite_accessory_subtypes(/datum/sprite_accessory/skrell_head_tentacle)[DEFAULT_SPRITE_LIST]
+
+	// serpentids
+	tails_list_serpentid = init_sprite_accessory_subtypes(/datum/sprite_accessory/tails/serpentid, add_blank = FALSE)[DEFAULT_SPRITE_LIST]
+	//serpenblades = init_sprite_accessory_subtypes(/datum/sprite_accessory/serpentid_blades, add_blank = FALSE)[DEFAULT_SPRITE_LIST]
 	/// BANDASTATION ADDITION END - Species
 
 /// This proc just initializes all /datum/sprite_accessory/hair_gradient into an list indexed by gradient-style name
