@@ -33,7 +33,7 @@ export const NtosEmojipedia = (props) => {
               <Input
                 placeholder="Найти по имени"
                 value={filter}
-                onInput={(_, value) => setFilter(value)}
+                onChange={setFilter}
               />
               <Button
                 tooltip={'Кликните по эмодзи, чтобы скопировать его тэг!'}

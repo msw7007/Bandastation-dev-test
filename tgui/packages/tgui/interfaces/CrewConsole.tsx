@@ -195,9 +195,8 @@ const CrewTable = () => {
           </Button>
           <Input
             placeholder="Search for name..."
-            onInput={(e) =>
-              setSearchQuery((e.target as HTMLTextAreaElement).value)
-            }
+            onChange={setSearchQuery}
+            value={searchQuery}
           />
         </>
       }

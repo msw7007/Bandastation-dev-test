@@ -8,8 +8,8 @@
 	///Timer for the blood mark expiration
 	var/blood_target_reset_timer
 
-	///Has a vote been called for a leader?
-	var/cult_vote_called = FALSE
+	///Has the cult leader passed on their responsibilities to someone else?
+	var/leader_passed_on = FALSE
 	///The cult leader
 	var/datum/antagonist/cult/cult_leader_datum
 	///Has the mass teleport been used yet?
@@ -55,7 +55,7 @@
 	/// BANDASTATION EDIT START - Cult thresholds rebalance
 	var/highpop_thresold_reached = alive >= CULT_HIGHPOP_THRESHOLD
 	var/cult_risen_threshold = highpop_thresold_reached ? CULT_RISEN_HIGHPOP : CULT_RISEN_LOWPOP
-	var/cult_ascended_threshold = highpop_thresold_reached ? CULT_RISEN_HIGHPOP : CULT_RISEN_LOWPOP
+	var/cult_ascended_threshold = highpop_thresold_reached ? CULT_ASCENDENT_HIGHPOP : CULT_ASCENDENT_LOWPOP
 	var/ratio = alive ? cultplayers / alive : 1
 	/// BANDASTATION EDIT END - Cult thresholds rebalance
 
@@ -78,7 +78,7 @@
 		/// BANDASTATION ADDITION START - Cult rebalance
 		priority_announce(
 			text = "Мы фиксируем активность из другого измерения, связаную с культом \"Nar'Sie\" на вашей станции. \
-				Согласно нашей информации, [ratio * 100]% экипажа станции были порабощены культом. \
+				Согласно нашей информации, [floor(ratio * 100)]% экипажа станции были порабощены культом. \
 				Сотрудники службы безопасности наделены правом беспрепятственно применять летальную силу против культистов. \
 				Остальному экипажу надлежит приготовиться защищать себя и свои отделы, не ведя охоту на культистов. \
 				Погибшие члены экипажа должны быть реанимированы и деконвертированы, как только ситуация будет взята под контроль.",
@@ -180,12 +180,15 @@
 	for(var/datum/mind/cultist as anything in members)
 		if(!cultist.current)
 			continue
+
 		if(cultist.current.stat == DEAD || !cultist.current.client)
 			continue
 
 		to_chat(cultist.current, span_bold(span_cult_large("[marker] has marked [blood_target] in \the [target_area] as the cult's top priority, get there immediately!")))
 		SEND_SOUND(cultist.current, sound(SFX_HALLUCINATION_OVER_HERE, 0, 1, 75))
 		cultist.current.client.images += blood_target_image
+		if (cultist.current.hud_used)
+			new /atom/movable/screen/navigate_arrow(null, cultist.current.hud_used, get_turf(new_target), COLOR_CULT_RED)
 
 	if(duration != INFINITY)
 		blood_target_reset_timer = addtimer(CALLBACK(src, PROC_REF(unset_blood_target)), duration, TIMER_STOPPABLE)
