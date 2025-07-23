@@ -28,6 +28,7 @@
 	var/list/available = list()
 	var/population = length(GLOB.alive_player_list)
 
+	// Считаем кандидатов для старта
 	var/list/antag_candidates = list()
 	if(is_roundstart)
 		for(var/mob/dead/new_player/player as anything in GLOB.new_player_list - SSjob.unassigned)
@@ -35,44 +36,38 @@
 				antag_candidates += player
 
 	var/num_real_players = length(antag_candidates)
-	var/tier = SSdynamic.pick_tier(num_real_players) // если у тебя есть метод для тира, иначе жёстко задать LOW или MEDIUM
+	var/tier = SSdynamic.pick_tier(num_real_players)
 
-	if (is_roundstart)
-		// Берём только стартовые рулсеты (как get_roundstart_rulesets)
-		for (var/ruleset_type in subtypesof(/datum/dynamic_ruleset/roundstart))
-			var/datum/dynamic_ruleset/roundstart/R = new ruleset_type(dynamic_config)
-			var/ruleset_weight = R.get_weight(population, tier)
-			if (ruleset_weight <= 0 || !R.can_be_selected())
-				continue
+	// Какие типы рулсетов проверять
+	var/list/types_to_scan = is_roundstart ? subtypesof(/datum/dynamic_ruleset/roundstart) : (subtypesof(/datum/dynamic_ruleset/midround) + subtypesof(/datum/dynamic_ruleset/latejoin))
 
-			available += list(list(
-				"id" = "[R.type]",
-				"name" = R.name,
-				"weight" = round(ruleset_weight, 0.1),
-				"target_roles" = "any",
-				"target_departs" = "any",
-				"tags" = "ruleset",
-				"influence" = "moderate",
-				"type" = "ruleset"
-			))
-	else
-		// Собираем все midround и latejoin рулсеты
-		for (var/ruleset_type in subtypesof(/datum/dynamic_ruleset/midround) + subtypesof(/datum/dynamic_ruleset/latejoin))
-			var/datum/dynamic_ruleset/R = new ruleset_type(dynamic_config)
-			var/ruleset_weight = R.get_weight(population, tier)
-			if (ruleset_weight <= 0 || !R.can_be_selected())
-				continue
+	for(var/ruleset_type in types_to_scan)
+		var/datum/dynamic_ruleset/R = new ruleset_type(dynamic_config)
+		if(!R || !R.name)
+			if(R) qdel(R)
+			continue
 
-			available += list(list(
-				"id" = "[R.type]",
-				"name" = R.name,
-				"weight" = round(ruleset_weight, 0.1),
-				"target_roles" = "any",
-				"target_departs" = "any",
-				"tags" = "ruleset",
-				"influence" = "moderate",
-				"type" = "ruleset"
-			))
+		// Пропускаем чисто шаблонные (родительские) рулсеты без флагов
+		if(R.ruleset_flags == NONE)
+			qdel(R)
+			continue
+
+		var/ruleset_weight = R.get_weight(population, tier)
+		if(ruleset_weight <= 0 || !R.can_be_selected())
+			qdel(R)
+			continue
+
+		available += list(list(
+			"id" = "[R.type]",
+			"name" = R.name,
+			"weight" = round(ruleset_weight, 0.1),
+			"target_roles" = "any",
+			"target_departs" = "any",
+			"tags" = "ruleset",
+			"type" = "ruleset"
+		))
+
+		qdel(R)
 
 	return available
 
