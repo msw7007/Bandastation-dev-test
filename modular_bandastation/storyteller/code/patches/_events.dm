@@ -66,7 +66,6 @@
 			"target_roles" = "engineers",
 			"target_departs" = "engineering",
 			"tags" = "space",
-			"influence" = "light",
 			"type" = "event"
 		))
 
