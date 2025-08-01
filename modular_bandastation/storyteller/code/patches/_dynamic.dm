@@ -65,7 +65,7 @@
 			"target_departs" = "any",
 			"tags" = "ruleset",
 			"type" = "ruleset"
-		))
+		) + (SSstoryteller.get_event_metadata("[R.type]") || list()))
 
 		qdel(R)
 

@@ -1,0 +1,27 @@
+["combat_storyteller"]
+name = "Боевой Сторителлер"
+frequency = 60
+description = "Агрессивный Сторителлер, предпочитает конфликты, бойни и разрушения."
+attention_tags = ["combat", "destructive", "invasion"]
+ignore_tags = ["positive", "mundane"]
+preferred_targets = ["security", "engineering"]
+allow_manual = true
+allow_auto = false
+
+["science_storyteller"]
+name = "Научный Сторителлер"
+frequency = 120
+description = "Наблюдает за станцией и бросает научные вызовы: аномалии, мутации и запредельные технологии."
+attention_tags = ["magical", "alien", "external"]
+preferred_targets = ["science", "medical"]
+allow_manual = false
+allow_auto = true
+
+["balanced_storyteller"]
+name = "Сбалансированный Сторителлер"
+frequency = 90
+description = "Поддерживает баланс между хаосом и порядком, кидает разнообразные испытания."
+attention_tags = ["communal", "space", "combat"]
+preferred_targets = ["all"]
+allow_manual = true
+allow_auto = true

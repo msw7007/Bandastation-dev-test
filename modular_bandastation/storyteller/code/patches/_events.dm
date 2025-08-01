@@ -67,7 +67,7 @@
 			"target_departs" = "engineering",
 			"tags" = "space",
 			"type" = "event"
-		))
+		) + (SSstoryteller.get_event_metadata("[E.type]") || list()))
 
 	return list()//available
 

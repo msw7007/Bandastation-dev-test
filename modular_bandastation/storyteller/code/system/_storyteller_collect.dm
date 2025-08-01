@@ -1,3 +1,41 @@
+/datum/controller/subsystem/storyteller/proc/collect_full_storyteller_data()
+	var/list/storyteller_data = list()
+
+	// Состояние станции
+	var/list/state = collect_station_state()
+	storyteller_data["state"] = state
+
+	// Доступные события и рулсеты
+	var/list/events = collect_available_events()
+	storyteller_data["events"] = events
+
+	// Активный профиль storyteller
+	var/list/profile = get_current_profile()
+	storyteller_data["storyteller_profile"] = profile || list()
+
+	// История принятых решений (пока заглушка)
+	storyteller_data["history"] = get_storyteller_history()
+
+	// Цели станции текущие
+	storyteller_data["goals"] = get_station_goals()
+
+	// Цели станции доступные из DM
+	storyteller_data["dm_goals"] = get_available_goals()
+
+	// Информация об антагонистах
+	storyteller_data["antags"] = collect_antag_data()
+
+	// Игроки
+	storyteller_data["players"] = collect_players_data()
+
+	// Контекст текущей метаистории
+	storyteller_data["story_context"] = get_story_context()
+
+	// Контекст текущей метаистории
+	storyteller_data["dynamic_history"] = get_story_context()
+
+	return storyteller_data
+
 /datum/controller/subsystem/storyteller/proc/collect_station_state()
 	var/list/state = list()
 
@@ -133,3 +171,74 @@
 	if(findtext(role, "Command"))
 		return "Command"
 	return "Civilian"
+
+/datum/controller/subsystem/storyteller/proc/collect_players_data()
+	var/list/players = list()
+
+	for(var/mob/living/carbon/human/H in GLOB.human_list)
+		if(!H.client || !H.mind)
+			continue
+
+		var/list/player = list()
+		player["ckey"] = H.client.key
+		player["job"] = H.mind.assigned_role || "Unassigned"
+		player["department"] = map_role_to_department(player["job"])
+		player["is_antag"] = (H.mind.antag_datums != null)
+		player["status"] = get_mob_status(H)
+		player["available_rulesets"] = get_available_rulesets_for(H)
+
+		players += list(player)
+
+	return players
+
+// Помощники
+/datum/controller/subsystem/storyteller/proc/get_mob_status(mob/living/M)
+	if(M.stat == DEAD)
+		return "dead"
+	if(M.stat == UNCONSCIOUS)
+		return "crit"
+	return "alive"
+
+/datum/controller/subsystem/storyteller/proc/get_available_rulesets_for(mob/living/M)
+	// Пока заглушка
+	return list()
+
+/datum/controller/subsystem/storyteller/proc/collect_antag_data()
+	var/list/antags = list()
+	var/list/entries = list()
+
+	for(var/datum/antagonist/A in GLOB.antagonists)
+		if(!A.owner)
+			continue
+
+		var/list/info = list()
+		info["ckey"] = A.owner.key
+		info["role"] = A.name
+		info["objectives"] = list()
+
+		for(var/datum/objective/O in A.objectives)
+			info["objectives"] += O.explanation_text
+
+		entries += list(info)
+
+	antags += list("count" = length(entries), "list" = entries)
+	return antags
+
+/datum/controller/subsystem/storyteller/proc/get_storyteller_history()
+	// Пока заглушка, позже будет список последних решений
+	return list()
+
+/datum/controller/subsystem/storyteller/proc/get_station_goals()
+	// Позже будет список текущих целей
+	return list()
+
+/datum/controller/subsystem/storyteller/proc/get_available_goals()
+	// Позже будет список текущих целей
+	return list()
+
+/datum/controller/subsystem/storyteller/proc/get_story_context()
+	// Контекст метаистории
+	return list(
+		"theme" = null,
+		"phases_passed" = list()
+	)
