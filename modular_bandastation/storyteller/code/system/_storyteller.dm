@@ -17,6 +17,24 @@ SUBSYSTEM_DEF(storyteller)
 	var/list/storyteller_profiles = list()
 	/// Текущий выбранный СТ
 	var/current_storyteller_profile = null
+	/// Лог событий, который хочет применить СТ
+	var/list/pending_decisions = list()
+	/// Лог событий, который применил СТ
+	var/list/history_log = list()
+	// Текущий сценарий, что произошло, сюжетные фазы
+	var/story_context = list(
+		list(
+			"phase" = null,
+			"passed" = FALSE,
+			"estimated_time" = null
+		)
+	)
+	// Подсказка от самого LLM себе же
+	var/dynamic_context = ""
+	// Состояние станции
+	var/list/cached_state = list()
+	// Таймер обновления
+	var/last_timer_call = 0
 
 /datum/controller/subsystem/storyteller/proc/log_storyteller(text, list/data)
 	logger.Log(LOG_CATEGORY_STORYTELLER, text, data)
@@ -98,16 +116,22 @@ SUBSYSTEM_DEF(storyteller)
 
 	return SS_INIT_SUCCESS
 
+/datum/controller/subsystem/storyteller/proc/update_cached_state(is_roundstart = FALSE)
+	cached_state = collect_full_storyteller_data(is_roundstart)
+
 /datum/controller/subsystem/storyteller/fire(resumed)
 	if(!active || !current_storyteller_profile || !storyteller_profiles[current_storyteller_profile])
 		return
 
-	ticks_passed++
+	last_timer_call = world.time - last_timer_call
+
+	if(last_timer_call >= 20)
+		update_cached_state()
 
 	var/list/profile = storyteller_profiles[current_storyteller_profile]
-	var/freq = max(1, profile["frequency"] || 60)
+	var/freq = max(1, profile["frequency"] || 60) SECONDS
 
-	if (ticks_passed % freq == 0)
+	if (last_timer_call >= freq)
 		main_logic(profile["description"] || "Текущий тик")
 
 /datum/controller/subsystem/storyteller/proc/get_current_profile()
@@ -131,31 +155,52 @@ SUBSYSTEM_DEF(storyteller)
 	log_storyteller("Storyteller profile manually set to: [id]", list())
 	return TRUE
 
-/datum/controller/subsystem/storyteller/proc/main_logic(addition_info = "Текущий тик", promt = "", is_roundstart = FALSE)
-	var/list/state = collect_station_state()
-	var/list/events = collect_available_events(is_roundstart)
+/datum/controller/subsystem/storyteller/proc/build_llm_payload(type = "tick", addition_info = null)
+	var/list/profile = get_current_profile()
+	if (!profile)
+		log_storyteller("Нет активного storyteller профиля. Прерываем build_llm_payload().")
+		return null
 
-	var/list/profile_data = get_current_profile()
+	var/list/state = cached_state
+	var/list/payload = state.Copy() // включаем: state, events, profile, goals и т.д.
+
+	payload["type"] = type
+
+	if (addition_info)
+		payload["addition_info"] = addition_info
+
+	return payload
+
+/datum/controller/subsystem/storyteller/proc/main_logic(addition_info = "Текущий тик", promt = "", is_roundstart = FALSE)
+	var/list/payload = build_llm_payload("tick", addition_info)
+	if (!payload)
+		return
+
+	payload["ticks"] = ticks_passed
+
+	var/json_request = json_encode(payload)
 	var/function = "llm"
 
-	if (!profile_data)
-		log_storyteller("Нет активного storyteller профиля. Используется заглушка.")
-		profile_data = list("name" = "Unknown", "description" = "No profile active.")
-
-	var/list/request_payload = list(
-		"state" = state,
-		"events" = events,
-		"ticks" = ticks_passed,
-		"addition_info" = addition_info,
-		"storyteller_profile" = profile_data
-	)
-
-	var/json_request = json_encode(request_payload)
-
-	if(is_roundstart)
+	if (is_roundstart)
 		send_to_llm(json_request, function)
 	else
 		INVOKE_ASYNC(src, PROC_REF(send_to_llm), json_request, function)
+
+/datum/controller/subsystem/storyteller/proc/handle_latejoin(mob/living/carbon/human/player)
+	var/list/payload = build_llm_payload("latejoin", null, player)
+	if (!payload)
+		return
+
+	var/list/player_info = list(
+		"ckey" = player?.client?.key,
+		"job" = player.mind?.assigned_role,
+		"department" = map_role_to_department(player.mind?.assigned_role)
+	)
+	payload["player"] = player_info
+	payload["ticks"] = ticks_passed
+
+	var/json = json_encode(payload)
+	send_to_llm(json, "latejoin_decision")
 
 /datum/controller/subsystem/storyteller/proc/send_to_llm(json_request, function)
 	// Запрос в LLM
@@ -173,11 +218,18 @@ SUBSYSTEM_DEF(storyteller)
 	if(!decision)
 		return
 
+	pending_decisions[decision["event_id"]] = list(
+		"info" = decision["info"],
+		"targets" = decision["targets"],
+		"type" = type
+	)
+
 	// Обрабатываем сразу, без доп. асинхронности
 	handle_lmm_decision(decision)
 
 /datum/controller/subsystem/storyteller/proc/setup_roundstart()
 	// Собираем состояние: сколько игроков, их профили, баланс отделов
+	update_cached_state(is_roundstart = TRUE)
 	main_logic(addition_info = "Сгенерируй сюжет используя только переданные из JSON события. Тебе не обязательно использовать их все и передай их вместо примечания.", is_roundstart = TRUE)
 
 	log_storyteller("Сторителлер перехватил начало раунда.")
@@ -186,4 +238,28 @@ SUBSYSTEM_DEF(storyteller)
 /datum/controller/subsystem/storyteller/proc/get_event_metadata(id)
 	if(islist(storyteller_event_metadata[id]))
 		return storyteller_event_metadata[id]
+	return null
+
+/datum/controller/subsystem/storyteller/proc/log_storyteller_decision(name, info = null, targets = null)
+	if(pending_decisions[name])
+		var/list/pending = pending_decisions[name]
+		info = info || pending["info"]
+		targets = targets || pending["targets"]
+		pending_decisions -= name
+
+	var/list/entry = list(
+		"tick" = world.time,
+		"name" = name
+	)
+	if(info)
+		entry["info"] = info
+	if(targets)
+		entry["targets"] = targets
+
+	history_log += list(entry)
+
+/datum/controller/subsystem/storyteller/proc/locate_mob_by_ckey(var/ckey)
+	for(var/mob/living/carbon/human/H in GLOB.alive_player_list)
+		if(H.client?.key == ckey)
+			return H
 	return null

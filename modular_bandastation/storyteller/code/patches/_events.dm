@@ -69,11 +69,13 @@
 			"type" = "event"
 		) + (SSstoryteller.get_event_metadata("[E.type]") || list()))
 
-	return list()//available
+	return available
 
 /datum/controller/subsystem/events/TriggerEvent(datum/round_event_control/event_to_trigger)
 	. = ..()
 
-	// После успешного запуска — сбросить вес
-	if(SSstoryteller.is_active() && (event_to_trigger.type in event_weights))
-		event_weights[event_to_trigger.type] = max(event_weights[event_to_trigger.type] / 5, 1)
+	if(. == EVENT_READY && SSstoryteller.is_active())
+		if(event_to_trigger.type in event_weights)
+			event_weights[event_to_trigger.type] = max(event_weights[event_to_trigger.type] / 5, 1)
+
+		SSstoryteller.log_storyteller_decision(event_to_trigger.name)

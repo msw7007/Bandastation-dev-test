@@ -18,10 +18,11 @@
 
 // Отключаем автоматический latejoin тоже
 /datum/controller/subsystem/dynamic/on_latejoin(mob/living/carbon/human/latejoiner)
-	if (SSstoryteller.is_active())
+	if (!SSstoryteller.is_active())
 		// Старый код
 		. = ..()
 	else
+		SSstoryteller.handle_latejoin(latejoiner)
 		log_dynamic("LMM: Latejoin detected ([key_name(latejoiner)]), передано в storyteller.")
 
 /datum/controller/subsystem/dynamic/proc/get_available_events(is_roundstart)
@@ -71,3 +72,7 @@
 
 	return available
 
+/datum/dynamic_ruleset/execute()
+	. = ..()
+
+	SSstoryteller.log_storyteller_decision(name)

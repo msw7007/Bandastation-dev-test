@@ -1,4 +1,4 @@
-/datum/controller/subsystem/storyteller/proc/collect_full_storyteller_data()
+/datum/controller/subsystem/storyteller/proc/collect_full_storyteller_data(is_roundstart = FALSE)
 	var/list/storyteller_data = list()
 
 	// Состояние станции
@@ -6,7 +6,7 @@
 	storyteller_data["state"] = state
 
 	// Доступные события и рулсеты
-	var/list/events = collect_available_events()
+	var/list/events = collect_available_events(is_roundstart)
 	storyteller_data["events"] = events
 
 	// Активный профиль storyteller
@@ -31,8 +31,8 @@
 	// Контекст текущей метаистории
 	storyteller_data["story_context"] = get_story_context()
 
-	// Контекст текущей метаистории
-	storyteller_data["dynamic_history"] = get_story_context()
+	// Динамика раунда для дополнительного анализа
+	storyteller_data["dynamic_history"] = get_dynamic_context()
 
 	return storyteller_data
 
@@ -59,9 +59,6 @@
 
 	// Экономика
 	state["station_credits"] = count_departments_funds() || 0
-
-	// Антаги
-	state["living_antags"] = length(GLOB.current_living_antags)
 
 	return state
 
@@ -225,20 +222,58 @@
 	return antags
 
 /datum/controller/subsystem/storyteller/proc/get_storyteller_history()
-	// Пока заглушка, позже будет список последних решений
-	return list()
+	return history_log
 
 /datum/controller/subsystem/storyteller/proc/get_station_goals()
-	// Позже будет список текущих целей
-	return list()
+	var/list/goals = list()
 
-/datum/controller/subsystem/storyteller/proc/get_available_goals()
-	// Позже будет список текущих целей
-	return list()
+	for(var/datum/station_goal/G in SSstation.get_station_goals())
+		goals += list(list(
+			"name" = G.name,
+			"type" = "[G.type]",
+			"completed" = G.completed,
+			"requires_space" = G.requires_space,
+			"required_crew" = G.required_crew
+		))
+
+	return goals
+
+/datum/controller/subsystem/storyteller/proc/get_available_goals(goal_budget = 5)
+	var/list/available = list()
+	var/list/possible = subtypesof(/datum/station_goal)
+	var/goal_weights = 0
+	var/is_planetary = SSmapping.is_planetary()
+
+	var/list/current_goal_types = list()
+	for(var/goal in get_station_goals())
+		current_goal_types += goal["type"]
+
+	while(possible.len && goal_weights < goal_budget)
+		var/type = pick_n_take(possible)
+		if(type in current_goal_types)
+			continue
+
+		var/datum/station_goal/G = new type()
+
+		if(G.requires_space && is_planetary)
+			continue
+
+		goal_weights += initial(G.weight)
+		available += list(list(
+			"name" = G.name,
+			"type" = "[type]",
+			"completed" = FALSE,
+			"requires_space" = G.requires_space,
+			"required_crew" = G.required_crew
+		))
+		qdel(G)
+
+	return available
 
 /datum/controller/subsystem/storyteller/proc/get_story_context()
 	// Контекст метаистории
-	return list(
-		"theme" = null,
-		"phases_passed" = list()
-	)
+	return story_context
+
+/datum/controller/subsystem/storyteller/proc/get_dynamic_context()
+	// Контекст метаистории
+	return dynamic_context

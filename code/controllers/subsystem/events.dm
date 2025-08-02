@@ -132,6 +132,7 @@ SUBSYSTEM_DEF(events)
 		event_to_trigger.max_occurrences = 0
 	else if(. == EVENT_READY)
 		event_to_trigger.run_event(random = TRUE)
+	return .
 
 ///Toggles whether or not wizard events will be in the event pool, and sends a notification to the admins.
 /datum/controller/subsystem/events/proc/toggleWizardmode()
