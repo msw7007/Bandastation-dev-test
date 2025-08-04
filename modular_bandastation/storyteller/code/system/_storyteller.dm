@@ -35,6 +35,10 @@ SUBSYSTEM_DEF(storyteller)
 	var/list/cached_state = list()
 	// Таймер обновления
 	var/last_timer_call = 0
+	// Кастомные задачи
+	var/list/custom_storyteller_goals = list()
+	// Проверка, что раундстарт уже был вызван ранее
+	var/roundstart_started = FALSE
 
 /datum/controller/subsystem/storyteller/proc/log_storyteller(text, list/data)
 	logger.Log(LOG_CATEGORY_STORYTELLER, text, data)
@@ -131,8 +135,10 @@ SUBSYSTEM_DEF(storyteller)
 	var/list/profile = storyteller_profiles[current_storyteller_profile]
 	var/freq = max(1, profile["frequency"] || 60) SECONDS
 
+	goal_monitor_tick()
+
 	if (last_timer_call >= freq)
-		main_logic(profile["description"] || "Текущий тик")
+		make_request(addition_info = profile["description"])
 
 /datum/controller/subsystem/storyteller/proc/get_current_profile()
 	if (current_storyteller_profile && storyteller_profiles)
@@ -171,8 +177,8 @@ SUBSYSTEM_DEF(storyteller)
 
 	return payload
 
-/datum/controller/subsystem/storyteller/proc/main_logic(addition_info = "Текущий тик", promt = "", is_roundstart = FALSE)
-	var/list/payload = build_llm_payload("tick", addition_info)
+/datum/controller/subsystem/storyteller/proc/make_request(addition_info = "Текущий тик", promt = "", is_roundstart = FALSE)
+	var/list/payload = build_llm_payload(is_roundstart)
 	if (!payload)
 		return
 
@@ -182,12 +188,13 @@ SUBSYSTEM_DEF(storyteller)
 	var/function = "llm"
 
 	if (is_roundstart)
+		function = "roundstart"
 		send_to_llm(json_request, function)
 	else
 		INVOKE_ASYNC(src, PROC_REF(send_to_llm), json_request, function)
 
 /datum/controller/subsystem/storyteller/proc/handle_latejoin(mob/living/carbon/human/player)
-	var/list/payload = build_llm_payload("latejoin", null, player)
+	var/list/payload = build_llm_payload()
 	if (!payload)
 		return
 
@@ -208,29 +215,38 @@ SUBSYSTEM_DEF(storyteller)
 	var/list/result = world.Export(url)
 
 	// TODO: узнать, фигли не заходит
-	if(!result || !"CONTENT" in result)
+	if((!result) || !(result["CONTENT"]))
 		log_storyteller("LLMconnection failed")
 		return
 
 	// TODO: хуйнуть обработчик ошибок
 	var/json_response = file2text(result["CONTENT"])
-	var/list/decision = json_decode(json_response)
-	if(!decision)
+	var/list/response = json_decode(json_response)
+	if(!response)
 		return
 
-	pending_decisions[decision["event_id"]] = list(
-		"info" = decision["info"],
-		"targets" = decision["targets"],
-		"type" = type
-	)
+	var/resp_type = lowertext(response["type"])
 
-	// Обрабатываем сразу, без доп. асинхронности
-	handle_lmm_decision(decision)
+	if(resp_type == "roundstart")
+		handle_roundstart_response(response)
+	else
+		pending_decisions[response["event_id"]] = list(
+			"info" = response["info"],
+			"targets" = response["targets"],
+			"type" = type
+		)
+
+		// Обрабатываем сразу, без доп. асинхронности
+		handle_lmm_result(response)
 
 /datum/controller/subsystem/storyteller/proc/setup_roundstart()
 	// Собираем состояние: сколько игроков, их профили, баланс отделов
+	if (roundstart_started)
+		return
+
+	roundstart_started = TRUE
 	update_cached_state(is_roundstart = TRUE)
-	main_logic(addition_info = "Сгенерируй сюжет используя только переданные из JSON события. Тебе не обязательно использовать их все и передай их вместо примечания.", is_roundstart = TRUE)
+	make_request(addition_info = "Сгенерируй сюжет используя только переданные из JSON события. Тебе не обязательно использовать их все и передай их вместо примечания.", is_roundstart = TRUE)
 
 	log_storyteller("Сторителлер перехватил начало раунда.")
 	return TRUE
@@ -263,3 +279,41 @@ SUBSYSTEM_DEF(storyteller)
 		if(H.client?.key == ckey)
 			return H
 	return null
+
+/datum/controller/subsystem/storyteller/proc/add_custom_goal(goal)
+	if(!islist(goal))
+		return
+	custom_storyteller_goals += list(goal)
+
+/datum/controller/subsystem/storyteller/proc/build_context_from_logs(hint)
+	var/list/matches = list()
+
+	for (var/line in global_station_logs)
+		if (hint in lowertext(line)) // простая фильтрация
+			matches += line
+
+	if (!matches.len)
+		return null
+
+	return matches
+
+/datum/controller/subsystem/storyteller/proc/goal_monitor_tick()
+	for (var/goal in custom_storyteller_goals)
+		if (!goal["completed"] == 0) // already requested
+			continue
+
+		var/hint = goal["completion_hint"]
+		if (!hint)
+			continue
+
+		var/search_context = build_context_from_logs(hint) // (↓ см. ниже)
+		if (!search_context)
+			continue
+
+		var/json = json_encode(list(
+			"goal" = goal,
+			"logs" = search_context,
+			"story_context" = story_context
+		))
+
+		INVOKE_ASYNC(src, PROC_REF(send_to_llm), json,  "goal_check")

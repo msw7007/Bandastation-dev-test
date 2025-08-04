@@ -227,14 +227,21 @@
 /datum/controller/subsystem/storyteller/proc/get_station_goals()
 	var/list/goals = list()
 
+	// Цели, заданные DM
 	for(var/datum/station_goal/G in SSstation.get_station_goals())
 		goals += list(list(
 			"name" = G.name,
 			"type" = "[G.type]",
 			"completed" = G.completed,
 			"requires_space" = G.requires_space,
-			"required_crew" = G.required_crew
+			"required_crew" = G.required_crew,
+			"completion_hint" = ""
 		))
+
+	// Цели, сгенерированные Storyteller'ом
+	for(var/goal in custom_storyteller_goals)
+		if(islist(goal))
+			goals += list(goal + list("source" = "storyteller"))
 
 	return goals
 
@@ -249,24 +256,22 @@
 		current_goal_types += goal["type"]
 
 	while(possible.len && goal_weights < goal_budget)
-		var/type = pick_n_take(possible)
+		var/datum/station_goal/type = pick_n_take(possible)
 		if(type in current_goal_types)
 			continue
 
-		var/datum/station_goal/G = new type()
-
-		if(G.requires_space && is_planetary)
+		if(type.requires_space && is_planetary)
 			continue
 
-		goal_weights += initial(G.weight)
+		goal_weights += initial(type.weight)
 		available += list(list(
-			"name" = G.name,
+			"name" = type.name,
 			"type" = "[type]",
 			"completed" = FALSE,
-			"requires_space" = G.requires_space,
-			"required_crew" = G.required_crew
+			"requires_space" = type.requires_space,
+			"required_crew" = type.required_crew,
+			"completion_hint" = ""
 		))
-		qdel(G)
 
 	return available
 

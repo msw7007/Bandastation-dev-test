@@ -1,12 +1,72 @@
+/datum/controller/subsystem/storyteller/proc/handle_lmm_result(list/decision)
+	handle_lmm_decision(decision)
+	generate_goals(decision["goals"])
+	handle_goal_completion()
+
 /datum/controller/subsystem/storyteller/proc/handle_lmm_decision(list/decision)
 	if(!decision || !decision["event_id"] || !decision["type"])
 		return
 
 	var/event_id = decision["event_id"]
 	var/type = decision["type"]
+	dynamic_context = decision["dynamic_context"]
 
 	// Запуск события
 	trigger_decision(event_id, decision["targets"], decision["info"], type)
+
+/datum/controller/subsystem/storyteller/proc/handle_roundstart_response(list/response)
+	log_storyteller("Обработка roundstart-ответа от LLM")
+
+	if(response["story_context"])
+		story_context = response["story_context"]
+		log_storyteller("Story context обновлён: [json_encode(story_context)]")
+
+	if(response["decisions"])
+		for(var/list/decision in response["decisions"])
+			if(!decision["event_id"] || !decision["type"])
+				continue
+
+			pending_decisions[decision["event_id"]] = list(
+				"info" = decision["info"],
+				"targets" = decision["targets"],
+				"type" = decision["type"]
+			)
+			handle_lmm_decision(decision)
+	generate_goals(response["goals"])
+
+/datum/controller/subsystem/storyteller/proc/generate_goals(goals_list)
+	if (!islist(goals_list) || !length(goals_list))
+		return
+
+	for (var/goal_data in goals_list)
+		if (!islist(goal_data))
+			continue
+
+		var/name = goal_data["name"]
+		var/type_str = goal_data["type"]
+
+		if (type_str && ispath(text2path(type_str), /datum/station_goal))
+			var/path = text2path(type_str)
+			if (!ispath(path, /datum/station_goal))
+				continue
+
+			if (SSstation.goals_by_type[path])
+				log_storyteller("ST: goal [path] уже существует, пропускаю")
+				continue
+
+			new path()
+			log_storyteller("Storyteller: Added DM-defined goal: [name]")
+		else
+			// Кастомная цель от нейросети
+			var/list/custom_goal = list(
+				"name" = name,
+				"description" = goal_data["description"],
+				"completed" = goal_data["completed"] ? 1 : 0,
+				"requires_space" = goal_data["requires_space"],
+				"required_crew" = goal_data["required_crew"]
+			)
+			add_custom_goal(custom_goal)
+			log_storyteller("Storyteller: Added custom goal: [name]")
 
 /datum/controller/subsystem/storyteller/proc/trigger_decision(event_id, targets, info, type)
 	if(type == "event")
@@ -69,3 +129,26 @@
 
 	log_storyteller("Storyteller: Triggering [event_id], targets: [targets], info: [info]")
 	// Позже: вызов через Event Controller или прямой запуск
+
+/datum/controller/subsystem/storyteller/proc/handle_goal_completion()
+	// Обработка завершённых кастомных целей (completed == 2)
+	for (var/i in 1 to custom_storyteller_goals.len)
+		var/list/goal = custom_storyteller_goals[i]
+		if (!islist(goal))
+			continue
+
+		if (goal["completed"] == 2)
+			var/name = goal["name"] || "Неизвестная цель"
+			var/description = goal["description"] || "Нет описания"
+
+			// Объявление для экипажа (можно заменить на announce или факс)
+			world << "<span class='notice'>Цель «[name]» выполнена!</span>"
+
+			// Лог для админов / внешних логов
+			log_storyteller("Storyteller: Цель завершена: [name] — [description]")
+
+			// Обновляем статус цели
+			goal["completed"] = 1
+
+			// Обновляем список (нужно, потому что list по значению)
+			custom_storyteller_goals[i] = goal

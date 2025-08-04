@@ -75,7 +75,7 @@ GLOBAL_DATUM_INIT(communications_controller, /datum/communciations_controller, n
 		addtimer(CALLBACK(src, PROC_REF(send_roundstart_report), greenshift), 10 SECONDS)
 		return
 
-	SSstation.generate_station_goals(CONFIG_GET(number/station_goal_budget))
+	//SSstation.generate_station_goals(CONFIG_GET(number/station_goal_budget))
 	if(!fexists(STATION_REPORT_TEMPLATE_PATH))
 		stack_trace("station report template doesn't exist at path: [STATION_REPORT_TEMPLATE_PATH]")
 		return
