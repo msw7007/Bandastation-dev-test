@@ -127,18 +127,18 @@ SUBSYSTEM_DEF(storyteller)
 	if(!active || !current_storyteller_profile || !storyteller_profiles[current_storyteller_profile])
 		return
 
-	last_timer_call = world.time - last_timer_call
+	var/time_passed = world.time - last_timer_call
 
-	if(last_timer_call >= 20)
+	if(time_passed >= 20)
 		update_cached_state()
 
 	var/list/profile = storyteller_profiles[current_storyteller_profile]
 	var/freq = max(1, profile["frequency"] || 60) SECONDS
 
-	goal_monitor_tick()
-
-	if (last_timer_call >= freq)
-		make_request(addition_info = profile["description"])
+	if (time_passed >= freq)
+		last_timer_call = world.time
+		goal_monitor_tick()
+		make_request(addition_info = profile["description"], is_roundstart = FALSE)
 
 /datum/controller/subsystem/storyteller/proc/get_current_profile()
 	if (current_storyteller_profile && storyteller_profiles)
@@ -246,8 +246,8 @@ SUBSYSTEM_DEF(storyteller)
 
 	roundstart_started = TRUE
 	update_cached_state(is_roundstart = TRUE)
+	last_timer_call = world.time
 	make_request(addition_info = "Сгенерируй сюжет используя только переданные из JSON события. Тебе не обязательно использовать их все и передай их вместо примечания.", is_roundstart = TRUE)
-
 	log_storyteller("Сторителлер перехватил начало раунда.")
 	return TRUE
 
@@ -285,18 +285,6 @@ SUBSYSTEM_DEF(storyteller)
 		return
 	custom_storyteller_goals += list(goal)
 
-/datum/controller/subsystem/storyteller/proc/build_context_from_logs(hint)
-	var/list/matches = list()
-
-	for (var/line in global_station_logs)
-		if (hint in lowertext(line)) // простая фильтрация
-			matches += line
-
-	if (!matches.len)
-		return null
-
-	return matches
-
 /datum/controller/subsystem/storyteller/proc/goal_monitor_tick()
 	for (var/goal in custom_storyteller_goals)
 		if (!goal["completed"] == 0) // already requested
@@ -306,7 +294,7 @@ SUBSYSTEM_DEF(storyteller)
 		if (!hint)
 			continue
 
-		var/search_context = build_context_from_logs(hint) // (↓ см. ниже)
+		var/search_context = build_context_from_logs(hint)
 		if (!search_context)
 			continue
 
@@ -317,3 +305,62 @@ SUBSYSTEM_DEF(storyteller)
 		))
 
 		INVOKE_ASYNC(src, PROC_REF(send_to_llm), json,  "goal_check")
+
+// Получение логов категории
+/datum/controller/subsystem/storyteller/proc/get_logs_by_category(category_name)
+	var/list/result = list()
+
+	var/datum/log_category/category = logger.log_categories[category_name]
+	if (!category)
+		return result
+
+	for (var/datum/log_entry/E in category.entries)
+		result += "[E.timestamp]: [E.message]"
+
+	return result
+
+/datum/controller/subsystem/storyteller/proc/get_all_logs()
+	var/list/all = list()
+
+	for (var/category_name in logger.log_categories)
+		all += get_logs_by_category(category_name)
+
+	return all
+
+/datum/controller/subsystem/storyteller/proc/filter_logs_by_keywords(list/logs, list/keywords)
+	var/list/matched = list()
+
+	for (var/line in logs)
+		for (var/kw in keywords)
+			if (findtext(line, kw))
+				matched += line
+				break
+
+	return matched
+
+/// Построение логов для проверки кастомной цели
+/proc/build_context_from_logs(hint)
+	if (!hint || !length(hint))
+		return null
+
+	var/list/keywords = splittext(lowertext(hint), ",") // ключевые слова
+	var/list/matched_logs = list()
+
+	// Пробегаем по всем лог-категориям
+	for (var/category in logger.log_categories)
+		var/datum/log_category/C = logger.log_categories[category]
+		if (!C?.entries || !length(C.entries))
+			continue
+
+		// Пробегаем по всем записям
+		for (var/datum/log_entry/E in C.entries)
+			if (!E?.message)
+				continue
+
+			var/msg = lowertext(E.message)
+			for (var/kw in keywords)
+				if (findtext(msg, kw))
+					matched_logs += E.message
+					break // нашли одно совпадение — достаточно
+
+	return matched_logs

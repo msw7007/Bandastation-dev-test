@@ -1,7 +1,7 @@
 /datum/controller/subsystem/storyteller/proc/handle_lmm_result(list/decision)
 	handle_lmm_decision(decision)
 	generate_goals(decision["goals"])
-	handle_goal_completion()
+	handle_goal_completion(decision)
 
 /datum/controller/subsystem/storyteller/proc/handle_lmm_decision(list/decision)
 	if(!decision || !decision["event_id"] || !decision["type"])
@@ -63,7 +63,8 @@
 				"description" = goal_data["description"],
 				"completed" = goal_data["completed"] ? 1 : 0,
 				"requires_space" = goal_data["requires_space"],
-				"required_crew" = goal_data["required_crew"]
+				"required_crew" = goal_data["required_crew"],
+				"completion_hint" = goal_data["completion_hint"]
 			)
 			add_custom_goal(custom_goal)
 			log_storyteller("Storyteller: Added custom goal: [name]")
@@ -130,25 +131,34 @@
 	log_storyteller("Storyteller: Triggering [event_id], targets: [targets], info: [info]")
 	// Позже: вызов через Event Controller или прямой запуск
 
-/datum/controller/subsystem/storyteller/proc/handle_goal_completion()
-	// Обработка завершённых кастомных целей (completed == 2)
+/datum/controller/subsystem/storyteller/proc/handle_goal_completion(list/result)
+	if (!islist(result))
+		return
+
+	var/list/updated_goal = result["goal"]
+	if (!islist(updated_goal))
+		return
+
+	var/name = updated_goal["name"]
+	if (!name)
+		return
+
 	for (var/i in 1 to custom_storyteller_goals.len)
-		var/list/goal = custom_storyteller_goals[i]
-		if (!islist(goal))
+		var/list/original_goal = custom_storyteller_goals[i]
+		if (!islist(original_goal))
 			continue
 
-		if (goal["completed"] == 2)
-			var/name = goal["name"] || "Неизвестная цель"
-			var/description = goal["description"] || "Нет описания"
+		if (original_goal["name"] != name)
+			continue
 
-			// Объявление для экипажа (можно заменить на announce или факс)
+		if (updated_goal["completed"] == 2)
+			var/description = updated_goal["description"] || "Нет описания"
+
 			world << "<span class='notice'>Цель «[name]» выполнена!</span>"
-
-			// Лог для админов / внешних логов
 			log_storyteller("Storyteller: Цель завершена: [name] — [description]")
 
-			// Обновляем статус цели
-			goal["completed"] = 1
+			updated_goal["completed"] = 1
+			custom_storyteller_goals[i] = updated_goal
 
-			// Обновляем список (нужно, потому что list по значению)
-			custom_storyteller_goals[i] = goal
+		break // цель найдена и обновлена, дальше не идём
+
