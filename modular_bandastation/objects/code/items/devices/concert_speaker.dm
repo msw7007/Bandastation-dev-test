@@ -61,34 +61,19 @@
 
 /obj/item/circuit_component/concert_listener
 	display_name = "Concert Speaker Receiver"
-	desc = "Получает название трека и воспроизводит его при сигнале запуска."
+	desc = "Компонент, который получает с систему управления концертом информацию о текущем треке. Разработано Саундхенд."
 
-	var/datum/port/input/track_name_in
-	var/datum/port/input/play
 	var/datum/port/output/is_playing
 	var/datum/port/output/started_playing
 	var/datum/port/output/stopped_playing
 
 	var/datum/track/selected_song
-	var/sound/channel/song_channel
 	var/playing = FALSE
 
 /obj/item/circuit_component/concert_listener/populate_ports()
-	track_name_in = add_input_port("Track Name", PORT_TYPE_STRING, trigger = PROC_REF(set_track))
-	play = add_input_port("Play", PORT_TYPE_SIGNAL, trigger = PROC_REF(play_track))
 	is_playing = add_output_port("Is Playing", PORT_TYPE_NUMBER)
 	started_playing = add_output_port("Started Playing", PORT_TYPE_SIGNAL)
 	stopped_playing = add_output_port("Stopped Playing", PORT_TYPE_SIGNAL)
-
-/obj/item/circuit_component/concert_listener/proc/set_track(datum/port/input/port, val)
-	selected_song = get_track_by_name(val)
-
-/obj/item/circuit_component/concert_listener/proc/get_track_by_name(trackname)
-	for(var/datum/track/soundhand/T as anything in subtypesof(/datum/track/soundhand))
-		var/datum/track/real = new T()
-		if(real.song_name == trackname)
-			return real
-	return null
 
 /obj/item/circuit_component/concert_listener/proc/play_track()
 	if(!selected_song || playing)
@@ -99,8 +84,16 @@
 	playing = TRUE
 	is_playing.set_output(TRUE)
 	started_playing.set_output(COMPONENT_SIGNAL)
+	update_parent()
 
 /obj/item/circuit_component/concert_listener/proc/stop_playback()
 	playing = FALSE
 	is_playing.set_output(FALSE)
 	stopped_playing.set_output(COMPONENT_SIGNAL)
+	update_parent()
+
+/obj/item/circuit_component/concert_listener/proc/update_parent()
+	if(istype(parent.shell.type, /obj/structure/concertspeaker))
+		var/obj/structure/concertspeaker/speaker = parent.shell
+		speaker.active = playing
+		speaker.update_icon()

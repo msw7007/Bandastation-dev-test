@@ -119,3 +119,90 @@
 	if(linked_jukebox?.music_player?.selection)
 		track_name_out.set_output(linked_jukebox.music_player.selection.song_name)
 		is_playing.set_output(TRUE)
+
+
+
+
+
+
+
+
+
+
+
+/obj/item/concert_pult
+	name = "Concert Pult"
+	desc = "Пульт линковки концертных устройств."
+	icon = 'icons/obj/devices/remote.dmi'
+	icon_state = "shuttleremote"
+
+	var/obj/item/circuit_component/concert_master/master_circuit
+	var/list/taker_refs // weakrefs на выданные листенеры
+
+/obj/item/concert_pult/Initialize(mapload)
+	. = ..()
+	taker_refs = list()
+
+// — вспомогательные —
+/obj/item/concert_pult/proc/find_circuit(atom/A)
+	if(istype(A, /obj/item/integrated_circuit)) return A
+	if(ismob(A) || istype(A, /obj/item) || istype(A, /obj/structure))
+		for(var/obj/item/integrated_circuit/C in A.contents)
+			return C
+	return null
+
+/obj/item/concert_pult/proc/prune_refs()
+	for(var/W in taker_refs.Copy())
+		var/obj/item/circuit_component/concert_listener/L = W:resolve()
+		if(!L || QDELETED(L))
+			taker_refs -= W
+
+/obj/item/concert_pult/proc/get_live_takers()
+	prune_refs()
+	var/list/live = list()
+	for(var/W in taker_refs)
+		var/obj/item/circuit_component/concert_listener/L = W:resolve()
+		if(L) live += L
+	return live
+
+/obj/item/concert_pult/proc/find_linked_listener_in_circuit(obj/item/integrated_circuit/circ)
+	for(var/obj/item/circuit_component/concert_listener/L in circ.attached_components)
+		return L
+	return null
+
+// — основной тоггл —
+/obj/item/concert_pult/proc/try_toggle_on(atom/target, mob/user)
+    if(!master_circuit)
+        to_chat(user, span_warning("Пульт не привязан к мастеру."))
+        return
+
+    var/obj/item/integrated_circuit/circ = find_circuit(target)
+    if(!circ)
+        to_chat(user, span_warning("Здесь нет интегральной схемы."))
+        return
+
+    // toggle: если есть наш listener — удаляем, иначе ставим
+    var/obj/item/circuit_component/concert_listener/existing = find_linked_listener_in_circuit(circ)
+    if(existing)
+        circ.remove_component(existing)
+        qdel(existing)
+        prune_refs()
+        to_chat(user, span_notice("Отвязано. Всего: [length(get_live_takers())]."))
+        return
+
+    prune_refs()
+    if(length(taker_refs) >= 16)
+        to_chat(user, span_warning("Достигнут предел связей."))
+        return
+
+    var/obj/item/circuit_component/concert_listener/L = new
+    circ.add_component(L)
+    taker_refs += WEAKREF(L)
+    to_chat(user, span_notice("Привязано. Всего: [length(taker_refs)]."))
+
+/obj/item/integrated_circuit/attackby(obj/item/I, mob/user, params)
+    if(istype(I, /obj/item/concert_pult))
+        var/obj/item/concert_pult/P = I
+        P.try_toggle_on(src, user)
+        return TRUE
+    return ..()
