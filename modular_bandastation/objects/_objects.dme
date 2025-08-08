@@ -72,7 +72,6 @@
 #include "code/items/devices/clothing_vendors.dm"
 #include "code/items/devices/concert_machine.dm"
 #include "code/items/devices/concert_speaker.dm"
-#include "code/items/devices/drums_kit.dm"
 #include "code/items/devices/radio.dm"
 #include "code/items/devices/recorder/recorder_message.dm"
 #include "code/items/implants/death_alarm.dm"
