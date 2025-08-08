@@ -77,23 +77,51 @@
 	var/datum/port/output/is_playing
 	var/datum/port/output/started_playing
 	var/datum/port/output/stopped_playing
-	var/datum/port/input/push
 
 	var/obj/machinery/jukebox/concertspeaker/linked_jukebox
+	var/obj/item/concert_pult/pult
 
 /obj/item/circuit_component/concert_master/populate_ports()
-	track_name_out = add_output_port("Track Name", PORT_TYPE_STRING)
-	is_playing = add_output_port("Is Playing", PORT_TYPE_NUMBER)
-	started_playing = add_output_port("Started Playing", PORT_TYPE_SIGNAL)
-	stopped_playing = add_output_port("Stopped Playing", PORT_TYPE_SIGNAL)
-	push = add_input_port("Push", PORT_TYPE_SIGNAL, trigger = PROC_REF(on_push))
+    track_name_out  = add_output_port("Track Name", PORT_TYPE_STRING)
+    is_playing      = add_output_port("Is Playing", PORT_TYPE_NUMBER)
+    started_playing = add_output_port("Started Playing", PORT_TYPE_SIGNAL)
+    stopped_playing = add_output_port("Stopped Playing", PORT_TYPE_SIGNAL)
+
+/obj/item/circuit_component/concert_master/Initialize(mapload)
+	. = ..()
+	if(!pult)
+		pult = new /obj/item/concert_pult(src)
+	pult.forceMove(src)
+
+/obj/item/circuit_component/concert_master/attack_self(mob/user)
+	if(!pult)
+		to_chat(user, span_warning("Пульт уже извлечён."))
+		return
+	if(!user.put_in_active_hand(pult))
+		pult.forceMove(drop_location())
+	to_chat(user, span_notice("Вы извлекли концертный пульт."))
+
+/obj/item/circuit_component/concert_master/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/concert_pult))
+		var/obj/item/concert_pult/P = I
+		// Разрешаем вставить только «свой» пульт: тот, что был создан внутри мастера
+		if(P != pult)
+			to_chat(user, span_warning("Этот пульт не подходит к данному контроллеру."))
+			return TRUE
+		P.forceMove(src)
+		to_chat(user, span_notice("Пульт вставлен в контроллер."))
+		return TRUE
+	return ..()
 
 /obj/item/circuit_component/concert_master/register_shell(atom/movable/shell)
+	if(!pult)
+		return ..()
+
 	. = ..()
 	if(istype(shell, /obj/machinery/jukebox/concertspeaker))
 		linked_jukebox = shell
 		RegisterSignal(linked_jukebox, COMSIG_INSTRUMENT_START, PROC_REF(on_song_start))
-		RegisterSignal(linked_jukebox, COMSIG_INSTRUMENT_END, PROC_REF(on_song_end))
+		RegisterSignal(linked_jukebox, COMSIG_INSTRUMENT_END,   PROC_REF(on_song_end))
 
 /obj/item/circuit_component/concert_master/unregister_shell(atom/movable/shell)
 	if(linked_jukebox)
@@ -109,24 +137,24 @@
 	is_playing.set_output(TRUE)
 	started_playing.set_output(COMPONENT_SIGNAL)
 
+	for(var/obj/item/circuit_component/concert_listener/L in get_takers())
+		L.selected_song = starting_song
+		L.play_track()
+
 /obj/item/circuit_component/concert_master/proc/on_song_end()
 	SIGNAL_HANDLER
 	track_name_out.set_output("")
 	is_playing.set_output(FALSE)
 	stopped_playing.set_output(COMPONENT_SIGNAL)
 
-/obj/item/circuit_component/concert_master/proc/on_push()
-	if(linked_jukebox?.music_player?.selection)
-		track_name_out.set_output(linked_jukebox.music_player.selection.song_name)
-		is_playing.set_output(TRUE)
+	for(var/obj/item/circuit_component/concert_listener/L in get_takers())
+		L.selected_song = null
+		L.stop_playback()
 
-
-
-
-
-
-
-
+/obj/item/circuit_component/concert_master/proc/get_takers()
+	if(!pult)
+		return list()
+	return pult.get_live_takers()
 
 
 
@@ -136,7 +164,6 @@
 	icon = 'icons/obj/devices/remote.dmi'
 	icon_state = "shuttleremote"
 
-	var/obj/item/circuit_component/concert_master/master_circuit
 	var/list/taker_refs // weakrefs на выданные листенеры
 
 /obj/item/concert_pult/Initialize(mapload)
@@ -172,33 +199,29 @@
 
 // — основной тоггл —
 /obj/item/concert_pult/proc/try_toggle_on(atom/target, mob/user)
-    if(!master_circuit)
-        to_chat(user, span_warning("Пульт не привязан к мастеру."))
-        return
+	var/obj/item/integrated_circuit/circ = find_circuit(target)
+	if(!circ)
+		to_chat(user, span_warning("Здесь нет интегральной схемы."))
+		return
 
-    var/obj/item/integrated_circuit/circ = find_circuit(target)
-    if(!circ)
-        to_chat(user, span_warning("Здесь нет интегральной схемы."))
-        return
+	// toggle: если есть наш listener — удаляем, иначе ставим
+	var/obj/item/circuit_component/concert_listener/existing = find_linked_listener_in_circuit(circ)
+	if(existing)
+		circ.remove_component(existing)
+		qdel(existing)
+		prune_refs()
+		to_chat(user, span_notice("Отвязано. Всего: [length(get_live_takers())]."))
+		return
 
-    // toggle: если есть наш listener — удаляем, иначе ставим
-    var/obj/item/circuit_component/concert_listener/existing = find_linked_listener_in_circuit(circ)
-    if(existing)
-        circ.remove_component(existing)
-        qdel(existing)
-        prune_refs()
-        to_chat(user, span_notice("Отвязано. Всего: [length(get_live_takers())]."))
-        return
+	prune_refs()
+	if(length(taker_refs) >= 16)
+		to_chat(user, span_warning("Достигнут предел связей."))
+		return
 
-    prune_refs()
-    if(length(taker_refs) >= 16)
-        to_chat(user, span_warning("Достигнут предел связей."))
-        return
-
-    var/obj/item/circuit_component/concert_listener/L = new
-    circ.add_component(L)
-    taker_refs += WEAKREF(L)
-    to_chat(user, span_notice("Привязано. Всего: [length(taker_refs)]."))
+	var/obj/item/circuit_component/concert_listener/L = new
+	circ.add_component(L)
+	taker_refs += WEAKREF(L)
+	to_chat(user, span_notice("Привязано. Всего: [length(taker_refs)]."))
 
 /obj/item/integrated_circuit/attackby(obj/item/I, mob/user, params)
     if(istype(I, /obj/item/concert_pult))
