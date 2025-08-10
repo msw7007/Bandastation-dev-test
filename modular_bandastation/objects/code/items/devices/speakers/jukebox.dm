@@ -1,15 +1,18 @@
+// Reasons for appling STATUS_MUTE to a mob's sound status
+/// The mob is deaf
+#define MUTE_DEAF (1<<0)
 /// The mob has disabled jukeboxes in their preferences
 #define MUTE_PREF (1<<1)
 /// The mob is out of range of the jukebox
 #define MUTE_RANGE (1<<2)
 
 /datum/jukebox/concertspeaker
-    // немного гистерезиса, чтобы якорь не щёлкал на границе
-    var/list/last_anchor_by_mob = list() // mob->turf
-    var/list/last_d2_by_mob     = list() // mob->num
-    var/list/last_switch_time   = list() // mob->time
-    var/const/ANCHOR_MIN_SWITCH_DS = 5
-    var/const/ANCHOR_MARGIN_D2     = 1
+	var/list/last_anchor_by_mob = list() // mob->turf
+	var/list/last_d2_by_mob     = list() // mob->num
+	var/list/last_switch_time   = list() // mob->time
+	var/const/ANCHOR_MIN_SWITCH_DS = 5
+	var/const/ANCHOR_MARGIN_D2     = 1
+	var/anchor_scan_timer_id
 
 /datum/jukebox/concertspeaker/load_songs_from_config()
 	var/static/list/config_songs
@@ -133,6 +136,67 @@
 
     SEND_SOUND(listener, active_song_sound)
 
+/datum/jukebox/concertspeaker/proc/register_near_anchor_mobs()
+    var/list/anchors = get_anchor_turfs()
+    if(!length(anchors))
+        anchors += get_turf(parent)
+
+    var/list/seen = list()
+    for(var/turf/T as anything in anchors)
+        if(!T) continue
+        for(var/mob/M as anything in hearers(sound_range, T))
+            if(seen[M]) continue
+            seen[M] = TRUE
+            if(!(M in listeners))
+                register_listener(M)
+
+/datum/jukebox/concertspeaker/start_music()
+    ..()
+    register_near_anchor_mobs()
+    if(!anchor_scan_timer_id)
+        anchor_scan_timer_id = addtimer(CALLBACK(src, PROC_REF(periodic_anchor_scan)), 2 SECONDS, TIMER_LOOP)
+
+/datum/jukebox/concertspeaker/proc/periodic_anchor_scan()
+    if(isnull(active_song_sound))
+        if(anchor_scan_timer_id)
+            deltimer(anchor_scan_timer_id)
+            anchor_scan_timer_id = null
+        return
+    register_near_anchor_mobs()
+
+/datum/jukebox/concertspeaker/Destroy()
+    if(anchor_scan_timer_id)
+        deltimer(anchor_scan_timer_id)
+        anchor_scan_timer_id = null
+    return ..()
+
+/datum/jukebox/concertspeaker/unmute_listener(mob/listener, reason)
+    reason = ~reason
+
+    if((reason & MUTE_DEAF) && HAS_TRAIT(listener, TRAIT_DEAF))
+        return FALSE
+
+    var/pref_volume = listener.client?.prefs.read_preference(/datum/preference/numeric/volume/sound_jukebox)
+    if((reason & MUTE_PREF) && !pref_volume)
+        return FALSE
+
+    if(reason & MUTE_RANGE)
+        var/turf/sound_turf = pick_anchor_for(listener)
+        var/turf/listener_turf = get_turf(listener)
+        if(isnull(sound_turf) || isnull(listener_turf))
+            return FALSE
+        if(sound_turf.z != listener_turf.z)
+            return FALSE
+
+        var/dx = sound_turf.x - listener_turf.x
+        var/dy = sound_turf.y - listener_turf.y
+        if(abs(dx) > x_cutoff || abs(dy) > z_cutoff)
+            return FALSE
+
+    listeners[listener] &= ~SOUND_MUTE
+    return TRUE
+
+#undef MUTE_DEAF
 #undef MUTE_PREF
 #undef MUTE_RANGE
 
