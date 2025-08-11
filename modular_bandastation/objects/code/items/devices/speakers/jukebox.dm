@@ -66,135 +66,141 @@
 	return turfs
 
 /datum/jukebox/concertspeaker/proc/pick_anchor_for(mob/listener)
-    var/turf/L = get_turf(listener)
-    if(!L) return get_turf(parent)
+	var/turf/L = get_turf(listener)
+	if(!L) return get_turf(parent)
 
-    var/list/anchors = get_anchor_turfs()
-    var/turf/best = null
-    var/best_d2 = 1.0e30
+	var/list/anchors = get_anchor_turfs()
+	var/turf/best = null
+	var/best_d2 = 1.0e30
 
-    for(var/turf/A as anything in anchors)
-        if(!A || A.z != L.z) continue
-        var/dx = A.x - L.x
-        var/dy = A.y - L.y
-        var/d2 = dx*dx + dy*dy
-        if(d2 < best_d2)
-            best_d2 = d2
-            best = A
+	for(var/turf/A as anything in anchors)
+		if(!A || A.z != L.z) continue
+		var/dx = A.x - L.x
+		var/dy = A.y - L.y
+		var/d2 = dx*dx + dy*dy
+		if(d2 < best_d2)
+			best_d2 = d2
+			best = A
 
-    if(!best) return get_turf(parent)
+	if(!best) return get_turf(parent)
 
-    // гистерезис
-    var/turf/prev = last_anchor_by_mob[listener]
-    var/prev_d2 = last_d2_by_mob[listener]
-    var/last_sw = last_switch_time[listener] || 0
-    if(prev && prev.z == L.z && !isnull(prev_d2))
-        if( (best_d2 + ANCHOR_MARGIN_D2) >= prev_d2 && (world.time - last_sw) < ANCHOR_MIN_SWITCH_DS )
-            return prev
+	// гистерезис
+	var/turf/prev = last_anchor_by_mob[listener]
+	var/prev_d2 = last_d2_by_mob[listener]
+	var/last_sw = last_switch_time[listener] || 0
+	if(prev && prev.z == L.z && !isnull(prev_d2))
+		if( (best_d2 + ANCHOR_MARGIN_D2) >= prev_d2 && (world.time - last_sw) < ANCHOR_MIN_SWITCH_DS )
+			return prev
 
-    last_anchor_by_mob[listener] = best
-    last_d2_by_mob[listener]     = best_d2
-    last_switch_time[listener]   = world.time
-    return best
+	last_anchor_by_mob[listener] = best
+	last_d2_by_mob[listener]     = best_d2
+	last_switch_time[listener]   = world.time
+	return best
 
 /// Переопределяем позиционирование — ставим XYZ относительно ближайшего якоря
 /datum/jukebox/concertspeaker/update_listener(mob/listener)
-    if(isnull(active_song_sound))
-        ..()
-        return
+	if(isnull(active_song_sound))
+		..()
+		return
 
-    active_song_sound.status = listeners[listener] || NONE
+	active_song_sound.status = listeners[listener] || NONE
 
-    var/turf/sound_turf = pick_anchor_for(listener)
-    var/turf/listener_turf = get_turf(listener)
+	var/turf/sound_turf = pick_anchor_for(listener)
+	var/turf/listener_turf = get_turf(listener)
 
-    if(isnull(sound_turf) || isnull(listener_turf))
-        active_song_sound.x = 0
-        active_song_sound.z = 0
+	if(isnull(sound_turf) || isnull(listener_turf))
+		active_song_sound.x = 0
+		active_song_sound.z = 0
 
-    else if(sound_turf.z != listener_turf.z)
-        listeners[listener] |= SOUND_MUTE
+	else if(sound_turf.z != listener_turf.z)
+		listeners[listener] |= SOUND_MUTE
 
-    else
-        var/new_x = sound_turf.x - listener_turf.x
-        var/new_z = sound_turf.y - listener_turf.y
+	else
+		var/new_x = sound_turf.x - listener_turf.x
+		var/new_z = sound_turf.y - listener_turf.y
 
-        if((abs(new_x) > x_cutoff || abs(new_z) > z_cutoff))
-            listeners[listener] |= SOUND_MUTE
-        else if(listeners[listener] & SOUND_MUTE)
-            unmute_listener(listener, MUTE_RANGE)
+		if((abs(new_x) > x_cutoff || abs(new_z) > z_cutoff))
+			listeners[listener] |= SOUND_MUTE
+		else if(listeners[listener] & SOUND_MUTE)
+			unmute_listener(listener, MUTE_RANGE)
 
-        active_song_sound.x = new_x
-        active_song_sound.z = new_z
+		active_song_sound.x = new_x
+		active_song_sound.z = new_z
 
-        var/pref_volume = listener.client?.prefs.read_preference(/datum/preference/numeric/volume/sound_jukebox)
-        if(!pref_volume)
-            listeners[listener] |= SOUND_MUTE
-        else
-            unmute_listener(listener, MUTE_PREF)
-            active_song_sound.volume = volume * (pref_volume/100)
+		var/pref_volume = listener.client?.prefs.read_preference(/datum/preference/numeric/volume/sound_jukebox)
+		if(!pref_volume)
+			listeners[listener] |= SOUND_MUTE
+		else
+			unmute_listener(listener, MUTE_PREF)
+			active_song_sound.volume = volume * (pref_volume/100)
 
-    SEND_SOUND(listener, active_song_sound)
+	SEND_SOUND(listener, active_song_sound)
 
 /datum/jukebox/concertspeaker/proc/register_near_anchor_mobs()
-    var/list/anchors = get_anchor_turfs()
-    if(!length(anchors))
-        anchors += get_turf(parent)
+	var/list/anchors = get_anchor_turfs()
+	if(!length(anchors))
+		anchors += get_turf(parent)
 
-    var/list/seen = list()
-    for(var/turf/T as anything in anchors)
-        if(!T) continue
-        for(var/mob/M as anything in hearers(sound_range, T))
-            if(seen[M]) continue
-            seen[M] = TRUE
-            if(!(M in listeners))
-                register_listener(M)
-
-/datum/jukebox/concertspeaker/start_music()
-    ..()
-    register_near_anchor_mobs()
-    if(!anchor_scan_timer_id)
-        anchor_scan_timer_id = addtimer(CALLBACK(src, PROC_REF(periodic_anchor_scan)), 2 SECONDS, TIMER_LOOP)
+	var/list/seen = list()
+	for(var/turf/T as anything in anchors)
+		if(!T) continue
+		for(var/mob/M as anything in hearers(sound_range, T))
+			if(seen[M]) continue
+			seen[M] = TRUE
+			if(!(M in listeners))
+				register_listener(M)
 
 /datum/jukebox/concertspeaker/proc/periodic_anchor_scan()
-    if(isnull(active_song_sound))
-        if(anchor_scan_timer_id)
-            deltimer(anchor_scan_timer_id)
-            anchor_scan_timer_id = null
-        return
-    register_near_anchor_mobs()
+	if(isnull(active_song_sound))
+		// стопаемся корректно; флаг TIMER_STOPPABLE позволяет это изнутри
+		stop_anchor_scan()
+		return
+	register_near_anchor_mobs()
+
+/datum/jukebox/concertspeaker/start_music()
+	..()
+	register_near_anchor_mobs()
+	start_anchor_scan()
 
 /datum/jukebox/concertspeaker/Destroy()
-    if(anchor_scan_timer_id)
-        deltimer(anchor_scan_timer_id)
-        anchor_scan_timer_id = null
-    return ..()
+	stop_anchor_scan()
+	return ..()
 
 /datum/jukebox/concertspeaker/unmute_listener(mob/listener, reason)
-    reason = ~reason
+	reason = ~reason
 
-    if((reason & MUTE_DEAF) && HAS_TRAIT(listener, TRAIT_DEAF))
-        return FALSE
+	if((reason & MUTE_DEAF) && HAS_TRAIT(listener, TRAIT_DEAF))
+		return FALSE
 
-    var/pref_volume = listener.client?.prefs.read_preference(/datum/preference/numeric/volume/sound_jukebox)
-    if((reason & MUTE_PREF) && !pref_volume)
-        return FALSE
+	var/pref_volume = listener.client?.prefs.read_preference(/datum/preference/numeric/volume/sound_jukebox)
+	if((reason & MUTE_PREF) && !pref_volume)
+		return FALSE
 
-    if(reason & MUTE_RANGE)
-        var/turf/sound_turf = pick_anchor_for(listener)
-        var/turf/listener_turf = get_turf(listener)
-        if(isnull(sound_turf) || isnull(listener_turf))
-            return FALSE
-        if(sound_turf.z != listener_turf.z)
-            return FALSE
+	if(reason & MUTE_RANGE)
+		var/turf/sound_turf = pick_anchor_for(listener)
+		var/turf/listener_turf = get_turf(listener)
+		if(isnull(sound_turf) || isnull(listener_turf))
+			return FALSE
+		if(sound_turf.z != listener_turf.z)
+			return FALSE
+		var/dx = sound_turf.x - listener_turf.x
+		var/dy = sound_turf.y - listener_turf.y
+		if(abs(dx) > x_cutoff || abs(dy) > z_cutoff)
+			return FALSE
 
-        var/dx = sound_turf.x - listener_turf.x
-        var/dy = sound_turf.y - listener_turf.y
-        if(abs(dx) > x_cutoff || abs(dy) > z_cutoff)
-            return FALSE
+	listeners[listener] &= ~SOUND_MUTE
+	return TRUE
 
-    listeners[listener] &= ~SOUND_MUTE
-    return TRUE
+/datum/jukebox/concertspeaker/proc/start_anchor_scan()
+	if(anchor_scan_timer_id)
+		return
+	anchor_scan_timer_id = addtimer(CALLBACK(src, PROC_REF(periodic_anchor_scan)), 2 SECONDS, TIMER_LOOP | TIMER_STOPPABLE)
+
+/datum/jukebox/concertspeaker/proc/stop_anchor_scan()
+	var/id = anchor_scan_timer_id
+	anchor_scan_timer_id = null
+	if(id)
+		deltimer(id)
 
 #undef MUTE_DEAF
 #undef MUTE_PREF
@@ -317,5 +323,65 @@
 /datum/track/soundhand/b10
 	song_path = 'sound/music/soundhand/B10.ogg'
 	song_name = "Б10 Кадуцей"
+	song_length = 5 MINUTES
+	song_beat = 1 SECONDS
+
+/datum/track/soundhand/c1
+	song_path = 'sound/music/soundhand/C1.ogg'
+	song_name = "В1 Поток"
+	song_length = 5 MINUTES
+	song_beat = 1 SECONDS
+
+/datum/track/soundhand/c2
+	song_path = 'sound/music/soundhand/C2.ogg'
+	song_name = "В2 Капитан! (Саундхенд)"
+	song_length = 5 MINUTES
+	song_beat = 1 SECONDS
+
+/datum/track/soundhand/c3
+	song_path = 'sound/music/soundhand/C3.ogg'
+	song_name = "В3 Реакция взрыва "
+	song_length = 5 MINUTES
+	song_beat = 1 SECONDS
+
+/datum/track/soundhand/c4
+	song_path = 'sound/music/soundhand/C4.ogg'
+	song_name = "В4 Голос Овощей"
+	song_length = 5 MINUTES
+	song_beat = 1 SECONDS
+
+/datum/track/soundhand/c5
+	song_path = 'sound/music/soundhand/C5.ogg'
+	song_name = "В5 Здрасьте"
+	song_length = 6 MINUTES
+	song_beat = 1 SECONDS
+
+/datum/track/soundhand/c6
+	song_path = 'sound/music/soundhand/C6.ogg'
+	song_name = "В6 Мир в огне"
+	song_length = 5 MINUTES
+	song_beat = 1 SECONDS
+
+/datum/track/soundhand/c7
+	song_path = 'sound/music/soundhand/C7.ogg'
+	song_name = "В7 Стиль (Саундхенд)"
+	song_length = 5 MINUTES
+	song_beat = 1 SECONDS
+
+/datum/track/soundhand/c8
+	song_path = 'sound/music/soundhand/C8.ogg'
+	song_name = "В8 Смена"
+	song_length = 5 MINUTES
+	song_beat = 1 SECONDS
+
+/datum/track/soundhand/c9
+	song_path = 'sound/music/soundhand/C9.ogg'
+	song_name = "В9 Метал устал"
+	song_length = 5 MINUTES
+	song_beat = 1 SECONDS
+
+/datum/track/soundhand/c10
+	song_path = 'sound/music/soundhand/C10.ogg'
+	song_name = "В10 Падение"
 	song_length = 5 MINUTES
 	song_beat = 1 SECONDS
