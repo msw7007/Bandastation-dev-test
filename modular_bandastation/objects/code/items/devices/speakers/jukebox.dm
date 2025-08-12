@@ -340,7 +340,7 @@
 
 /datum/track/soundhand/c3
 	song_path = 'sound/music/soundhand/C3.ogg'
-	song_name = "В3 Реакция взрыва "
+	song_name = "В3 Сломана"
 	song_length = 5 MINUTES
 	song_beat = 1 SECONDS
 
