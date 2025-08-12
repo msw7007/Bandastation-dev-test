@@ -116,11 +116,17 @@
 	/// Do not directly set, use update_sustain()
 	var/cached_exponential_dropoff = 1.045
 	/////////////////////////////////////////////////////////////////////////
+	/// Прямой BPM (целый)
+	var/bpm = 120
+	/// Минимальный BPM
+	var/min_bpm = 1
+	/// Накопленный дробный остаток тиков для сглаживания
+	var/delay_residual = 0.0
 
 /datum/song/New(atom/parent, list/instrument_ids, new_range)
 	SSinstruments.on_song_new(src)
 	lines = list()
-	tempo = sanitize_tempo(tempo, TRUE)
+	// НЕ вызываем sanitize_tempo для старого tempo — работаем через bpm
 	src.parent = parent
 	if(instrument_ids)
 		allowed_instrument_ids = islist(instrument_ids) ? instrument_ids : list(instrument_ids)
@@ -131,6 +137,7 @@
 	update_sustain()
 	if(new_range)
 		instrument_range = new_range
+	set_bpm(120)
 
 /datum/song/Destroy()
 	stop_playing()
@@ -192,8 +199,7 @@
  * Attempts to start playing our song.
  */
 /datum/song/proc/start_playing(atom/user)
-	if(playing)
-		return
+	if(playing) return
 	if(!using_instrument?.ready())
 		to_chat(user, span_warning("An error has occured with [src]. Please reset the instrument."))
 		return
@@ -202,13 +208,12 @@
 		to_chat(user, span_warning("Song is empty."))
 		return
 	playing = TRUE
-	//we can not afford to runtime, since we are going to be doing sound channel reservations and if we runtime it means we have a channel allocation leak.
-	//wrap the rest of the stuff to ensure stop_playing() is called.
 	do_hearcheck()
 	SEND_SIGNAL(parent, COMSIG_INSTRUMENT_START, src, user)
 	SEND_SIGNAL(user, COMSIG_ATOM_STARTING_INSTRUMENT, src)
 	elapsed_delay = 0
 	delay_by = 0
+	delay_residual = 0.0      // важное: сбрасываем
 	current_chord = 1
 	music_player = user
 	START_PROCESSING(SSinstruments, src)
@@ -263,8 +268,24 @@
  */
 /datum/song/proc/tempodiv_to_delay(tempodiv)
 	if(!tempodiv)
-		tempodiv = 1 // no division by 0. some song converters tend to use 0 for when it wants to have no div, for whatever reason.
-	return max(1, round((tempo/tempodiv) / world.tick_lag, 1))
+		tempodiv = 1
+
+	// длительность одной доли в ДЕСИСЕКУНДАХ (через макрос SECONDS): 60 сек / bpm
+	var/ds_per_beat = (60 SECONDS) / bpm
+	var/ds_per_div  = ds_per_beat / tempodiv
+
+	// точное число тиков без округления
+	var/exact_ticks = ds_per_div / world.tick_lag
+
+	// добавляем накопленный остаток, берём целую часть сейчас
+	var/with_res = exact_ticks + delay_residual
+	var/ticks = floor(with_res)
+	if(ticks < 1) ticks = 1
+
+	// остаток переносим вперёд (анти-ступеньки)
+	delay_residual = with_res - ticks
+
+	return ticks
 
 /**
  * Compiles chords.
@@ -317,8 +338,19 @@
 /**
  * Sets our tempo from a beats-per-minute, sanitizing it to a valid number first.
  */
-/datum/song/proc/set_bpm(bpm)
-	tempo = sanitize_tempo(600 / bpm)
+/// Максимальный BPM, ограниченный тиком мира
+/datum/song/proc/get_max_bpm()
+	// сколько тиков в минуте: 60 сек / tick_lag
+	return max(1, round((60 SECONDS) / world.tick_lag))
+
+/datum/song/proc/set_bpm(new_bpm)
+	new_bpm = clamp(round(new_bpm), min_bpm, get_max_bpm())
+	if(new_bpm == bpm) return
+	bpm = new_bpm
+	// совместимость: шлём тот же сигнал, что и при смене темпа
+	SEND_SIGNAL(parent, COMSIG_INSTRUMENT_TEMPO_CHANGE, src)
+	// при смене BPM сбрасываем остаток
+	delay_residual = 0.0
 
 /datum/song/process(wait)
 	if(!playing)

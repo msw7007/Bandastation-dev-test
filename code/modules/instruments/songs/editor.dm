@@ -1,3 +1,5 @@
+#define BPM_PREFIX "BPM: "
+
 /datum/song/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if (!ui)
@@ -30,7 +32,7 @@
 	data["sustain_indefinitely"] = full_sustain_held_note
 	data["playing"] = playing
 	data["repeat"] = repeat
-	data["bpm"] = round(60 SECONDS / tempo)
+	data["bpm"] = bpm
 	data["lines"] = list()
 	var/linecount
 	for(var/line in lines)
@@ -55,7 +57,13 @@
 	data["note_shift_max"] = note_shift_max
 	data["max_line_chars"] = MUSIC_MAXLINECHARS
 	data["max_lines"] = MUSIC_MAXLINES
+	data["min_bpm"] = min_bpm
+	data["max_bpm"] = get_max_bpm()
 	return data
+
+/datum/song/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+    . = ..()
+
 
 /datum/song/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
@@ -81,13 +89,19 @@
 			set_instrument(new_instrument)
 			return TRUE
 		if("tempo")
+			// вместо ±tick_lag — ±BPM
 			var/move_direction = params["tempo_change"]
-			var/tempo_diff
+			var/step = clamp(round(text2num(params["bpm_step"]) || 1), 1, 100)
 			if(move_direction == "increase_speed")
-				tempo_diff = world.tick_lag
+				set_bpm(bpm + step)
 			else
-				tempo_diff = -world.tick_lag
-			tempo = sanitize_tempo(tempo + tempo_diff)
+				set_bpm(bpm - step)
+			return TRUE
+
+		if("set_bpm")
+			var/new_bpm = text2num(params["amount"])
+			if(!isnum(new_bpm) || new_bpm <= 0) return FALSE
+			set_bpm(new_bpm)
 			return TRUE
 
 		//SONG MAKING
@@ -108,7 +122,7 @@
 		if("start_new_song")
 			name = ""
 			lines = new()
-			tempo = sanitize_tempo(5) // default 120 BPM
+			set_bpm(120)
 			return TRUE
 		if("add_new_line")
 			var/newline = tgui_input_text(user, "Enter your line", parent.name, max_length = MUSIC_MAXLINECHARS)
@@ -186,16 +200,14 @@
  */
 /datum/song/proc/ParseSong(mob/user, new_song)
 	set waitfor = FALSE
-	//split into lines
 	lines = islist(new_song) ? new_song : splittext(new_song, "\n")
 	if(lines.len)
-		var/bpm_string = "BPM: "
-		if(findtext(lines[1], bpm_string, 1, length(bpm_string) + 1))
-			var/divisor = text2num(copytext(lines[1], length(bpm_string) + 1)) || 120 // default
-			tempo = sanitize_tempo(BPM_TO_TEMPO_SETTING(divisor))
+		if(copytext(lines[1], 1, length(BPM_PREFIX) + 1) == BPM_PREFIX)
+			var/val = text2num(copytext(lines[1], length(BPM_PREFIX) + 1)) || 120
+			set_bpm(val)
 			lines.Cut(1, 2)
 		else
-			tempo = sanitize_tempo(5) // default 120 BPM
+			set_bpm(120)
 		if(lines.len > MUSIC_MAXLINES)
 			if(user)
 				to_chat(user, "Too many lines!")
