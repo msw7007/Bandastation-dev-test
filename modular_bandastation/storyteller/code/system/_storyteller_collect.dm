@@ -204,21 +204,43 @@
 	var/list/antags = list()
 	var/list/entries = list()
 
-	for(var/datum/antagonist/A in GLOB.antagonists)
-		if(!A.owner)
+	for (var/datum/antagonist/A in GLOB.antagonists)
+		if (!A.owner)
 			continue
 
-		var/list/info = list()
-		info["ckey"] = A.owner.key
-		info["role"] = A.name
-		info["objectives"] = list()
+		var/mob/M = A.owner.current
+		var/is_alive = (istype(M) && M.stat != DEAD)
+		var/status = "unknown"
+		if (istype(M))
+			if (M.stat == DEAD)
+				status = "dead"
+			else if (M.stat == UNCONSCIOUS)
+				status = "crit"
+			else
+				status = "alive"
 
-		for(var/datum/objective/O in A.objectives)
-			info["objectives"] += O.explanation_text
+		var/assigned = A.owner?.assigned_role
+		var/department = map_role_to_department(assigned || "")
+
+		var/list/objectives = list()
+		for (var/datum/objective/O in A.objectives)
+			if (O?.explanation_text)
+				objectives += "[O.explanation_text]"
+
+		var/list/info = list(
+			"ckey" = A.owner.key,
+			"role" = A.name,                 // тип антага (напр., Changeling / Traitor)
+			"job" = assigned,                // цивильная роль игрока
+			"department" = department,       // департамент
+			"is_alive" = is_alive,
+			"status" = status,               // alive / crit / dead
+			"objectives" = objectives        // список текстовых целей
+		)
 
 		entries += list(info)
 
-	antags += list("count" = length(entries), "list" = entries)
+	antags["count"] = length(entries)
+	antags["list"] = entries
 	return antags
 
 /datum/controller/subsystem/storyteller/proc/get_storyteller_history()

@@ -139,6 +139,7 @@ SUBSYSTEM_DEF(storyteller)
 		last_timer_call = world.time
 		goal_monitor_tick()
 		make_request(addition_info = profile["description"], is_roundstart = FALSE)
+		check_antagonist_missions()
 
 /datum/controller/subsystem/storyteller/proc/get_current_profile()
 	if (current_storyteller_profile && storyteller_profiles)
@@ -208,6 +209,18 @@ SUBSYSTEM_DEF(storyteller)
 
 	var/json = json_encode(payload)
 	send_to_llm(json, "latejoin_decision")
+
+/datum/controller/subsystem/storyteller/proc/check_antagonist_missions()
+	if (!is_active())
+		return
+
+	var/list/payload = build_llm_payload("antag_missions")
+	if (!payload)
+		return
+
+	// тут уже внутри payload есть "antags" из collect_antag_data()
+	var/json = json_encode(payload)
+	INVOKE_ASYNC(src, PROC_REF(send_to_llm), json, "antag_missions")
 
 /datum/controller/subsystem/storyteller/proc/send_to_llm(json_request, function)
 	// Запрос в LLM

@@ -2,6 +2,7 @@
 	handle_lmm_decision(decision)
 	generate_goals(decision["goals"])
 	handle_goal_completion(decision)
+	apply_antag_mission_changes(decision)
 
 /datum/controller/subsystem/storyteller/proc/handle_lmm_decision(list/decision)
 	if(!decision || !decision["event_id"] || !decision["type"])
@@ -162,3 +163,87 @@
 
 		break // цель найдена и обновлена, дальше не идём
 
+/datum/controller/subsystem/storyteller/proc/apply_antag_mission_changes(list/result)
+	if (!islist(result))
+		return
+
+	var/list/decisions = result["decisions"]
+	var/dynamic_context = result["dynamic_context"]
+
+	if (istext(dynamic_context) && length(dynamic_context))
+		log_storyteller("ANTAG CONTEXT UPDATE", list("ctx" = dynamic_context))
+
+	if (!islist(decisions))
+		return
+
+	for (var/entry in decisions)
+		if (!islist(entry))
+			continue
+
+		var/ckey = entry["ckey"]
+		var/notify = entry["notify_player"]
+		var/list/actions = entry["actions"]
+
+		if (!ckey || !islist(actions) || !length(actions))
+			continue
+
+		var/datum/antagonist/antag = locate_antag_by_ckey(ckey)
+		if (!antag)
+			log_storyteller("apply_antag_mission_changes: antagonist not found", list("ckey" = ckey))
+			continue
+
+		apply_actions_to_antag(antag, actions, notify)
+
+/datum/controller/subsystem/storyteller/proc/locate_antag_by_ckey(ckey)
+	for (var/datum/antagonist/A in GLOB.antagonists)
+		if (A.owner && A.owner.key == ckey)
+			return A
+	return null
+
+/datum/controller/subsystem/storyteller/proc/apply_actions_to_antag(datum/antagonist/A, list/actions, notify_player = FALSE)
+	var/mob/living/carbon/human/H = A.owner?.current
+	for (var/action in actions)
+		if (!islist(action)) continue
+		var/op = lowertext(action["op"] || "")
+		switch(op)
+			if ("add")
+				var/text = action["text"]
+				if (istext(text) && length(text))
+					st_add_custom_objective(A, text)
+					log_storyteller("ANTAG ADD OBJ", list("ckey"=A.owner?.key, "text"=text))
+			if ("remove")
+				var/match = action["match"]
+				if (istext(match) && length(match))
+					var/removed = st_remove_objectives_by_match(A, match)
+					log_storyteller("ANTAG REMOVE OBJ", list("ckey"=A.owner?.key, "match"=match, "removed"=removed))
+			if ("replace")
+				var/old_match = action["match"]
+				var/new_text = action["text"]
+				if (istext(old_match) && istext(new_text) && length(new_text))
+					var/removed = st_remove_objectives_by_match(A, old_match)
+					if (removed)
+						st_add_custom_objective(A, new_text)
+						log_storyteller("ANTAG REPLACE OBJ", list("ckey"=A.owner?.key, "from"=old_match, "to"=new_text))
+			if ("retag")
+				var/style = action["style"]
+				// тут можно выставлять внутренние флаги/поведение
+				log_storyteller("ANTAG RETAG", list("ckey"=A.owner?.key, "style"=style))
+			else
+				log_storyteller("ANTAG UNKNOWN OP", list("op"=op))
+
+	if (notify_player && H)
+		to_chat(H, "<span class='notice'>Ваши цели были обновлены Сторителлером.</span>")
+
+/datum/controller/subsystem/storyteller/proc/st_add_custom_objective(datum/antagonist/A, text)
+	var/datum/objective/custom/O = new
+	O.explanation_text = text
+	A.objectives += O
+
+/datum/controller/subsystem/storyteller/proc/st_remove_objectives_by_match(datum/antagonist/A, match)
+	var/removed = 0
+	for (var/datum/objective/O in A.objectives.Copy())
+		if (findtext("[O.explanation_text]", "[match]"))
+			A.objectives -= O
+			qdel(O)
+			removed++
+	return removed
