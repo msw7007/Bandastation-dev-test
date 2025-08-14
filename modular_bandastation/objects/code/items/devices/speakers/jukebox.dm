@@ -364,7 +364,7 @@
 
 /datum/track/soundhand/c7
 	song_path = 'sound/music/soundhand/C7.ogg'
-	song_name = "В7 Стиль (Саундхенд)"
+	song_name = "В7 Стиль"
 	song_length = 5 MINUTES
 	song_beat = 1 SECONDS
 
