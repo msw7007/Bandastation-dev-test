@@ -39,6 +39,9 @@ SUBSYSTEM_DEF(storyteller)
 	var/list/custom_storyteller_goals = list()
 	// Проверка, что раундстарт уже был вызван ранее
 	var/roundstart_started = FALSE
+	// Данные с анонсами
+	var/last_cc_announce = 0
+	var/last_syndi_announce = 0
 
 /datum/controller/subsystem/storyteller/proc/log_storyteller(text, list/data)
 	logger.Log(LOG_CATEGORY_STORYTELLER, text, data)

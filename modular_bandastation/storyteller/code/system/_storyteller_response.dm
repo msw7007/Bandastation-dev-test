@@ -3,6 +3,8 @@
 	generate_goals(decision["goals"])
 	handle_goal_completion(decision)
 	apply_antag_mission_changes(decision)
+	if(islist(decision["announcements"]) && length(decision["announcements"]))
+		apply_announcements(decision["announcements"])
 
 /datum/controller/subsystem/storyteller/proc/handle_lmm_decision(list/decision)
 	if(!decision || !decision["event_id"] || !decision["type"])
@@ -247,3 +249,141 @@
 			qdel(O)
 			removed++
 	return removed
+
+/datum/controller/subsystem/storyteller/proc/st_broadcast_announce(
+	org = "cc",
+	text,
+	title = null,
+	important = TRUE,
+	force = FALSE
+)
+	if(!istext(text) || !length(text))
+		return
+
+	var/l_org = lowertext("[org]")
+
+	if(l_org == "cc")
+		if(!force && (world.time - last_cc_announce < ST_CC_INTERVAL))
+			return
+		last_cc_announce = world.time
+		if(!title) title = "Центральное Командование"
+		priority_announce(text, title, sound = ST_CC_SOUND)
+		log_storyteller("CC ANNOUNCE", list("title"=title, "text"=text))
+		return
+
+	if(l_org == "syndicate")
+		if(!force && (world.time - last_syndi_announce < ST_SYNDI_INTERVAL))
+			return
+		last_syndi_announce = world.time
+		if(!title) title = "Синдикат"
+		priority_announce(text, title, sound = ST_SYNDI_SOUND)
+		log_storyteller("SYNDI ANNOUNCE", list("title"=title, "text"=text))
+		return
+
+	// Кастомный источник (fallback тем же priority_announce)
+	if(!title) title = uppertext(org)
+	priority_announce(text, title)
+	log_storyteller("GENERIC ANNOUNCE", list("org"=org, "title"=title, "text"=text))
+
+/datum/controller/subsystem/storyteller/proc/st_send_fax(
+	org = "cc",
+	subject = "Директива",
+	body = "",
+	signature = "Central Command"
+)
+	if(!istext(body) || !length(body))
+		return
+
+	// Создаём бумагу
+	var/obj/item/paper/P = new
+	P.name = "Fax: [subject]"
+	// У разных билдов поля бумаги отличаются: info / content / add_content()
+	if(hasvar(P, "info"))
+		P.info = "[body]\n\n— [signature]"
+	else if(ismob(P)) // на всякий случай, но бумага — предмет
+		;
+	else
+		// Попытка через стандартный интерфейс бумаги
+		if(istype(P, /obj/item/paper))
+			if(isproc(P, "add_content"))
+				call(P, "add_content")("[body]\n\n— [signature]")
+	P.update_icon()
+
+	// Поиск факсов станции
+	var/list/targets = list()
+	for(var/obj/machinery/fax/F in world)
+		// Критерии фильтрации мягкие, т.к. билды разные:
+		// Ищем всё, что не CentCom-админ факсы (чтобы доставить именно на станцию),
+		// но при желании можно сделать наоборот — только CentCom факсы.
+		// Тут делаем проще: любые факсы на станции.
+		targets += F
+
+	if(!length(targets))
+		// fallback: положить бумагу на мостике (если есть) или просто в лобби
+		var/turf/T = get_turf(GLOB?["bridge"] || world) // замените на референс вашей бридж-зоны
+		if(istype(T))
+			P.forceMove(T)
+		log_storyteller("FAX DELIVER FAIL", list("org"=org, "subject"=subject, "reason"="no fax machines"))
+		return
+
+	// Пытаемся культурно доставить
+	var/delivered = FALSE
+	for(var/obj/machinery/fax/F in targets)
+		if(isproc(F, "receive_fax"))
+			// Многие билды имеют receive_fax(paper, sender, from_department, to_department, attachment)
+			var/success = call(F, "receive_fax")(P, signature, "[uppertext(org)]", "Station", null)
+			if(success)
+				delivered = TRUE
+				break
+		else if(isproc(F, "receive"))
+			var/success2 = call(F, "receive")(P)
+			if(success2)
+				delivered = TRUE
+				break
+		else
+			// Грубо: кинуть бумагу рядом с факсом
+			P.forceMove(get_turf(F))
+			if(F?.visible_message)
+				F.visible_message("<span class='notice'>Факс с пометкой [uppertext(org)] прибыл: \"[subject]\".</span>")
+			delivered = TRUE
+			break
+
+	if(delivered)
+		log_storyteller("FAX DELIVER OK", list("org"=org, "subject"=subject))
+	else
+		// ещё один fallback — оповещение, что не доставили
+		log_storyteller("FAX DELIVER FAIL", list("org"=org, "subject"=subject, "reason"="receive failed"))
+
+/datum/controller/subsystem/storyteller/proc/apply_announcements(list/announcements)
+	if(!islist(announcements) || !length(announcements))
+		return
+
+	for(var/entry in announcements)
+		if(!islist(entry)) continue
+
+		var/channel = lowertext(entry["channel"] || "announce")
+		var/title   = entry["title"] || null
+		var/text    = entry["text"]  || ""
+		var/force   = entry["force"] ? TRUE : FALSE
+
+		if(!length(text))
+			continue
+
+		switch(channel)
+			if("cc")
+				st_broadcast_announce("cc", text, title, TRUE, force)
+			if("syndicate")
+				st_broadcast_announce("syndicate", text, title, TRUE, force)
+			if("announce") // кастом/дефолт
+				st_broadcast_announce("custom", text, title, TRUE, force)
+			if("fax_cc")
+				var/subject = entry["subject"] || (title || "Директива ЦК")
+				var/sign    = entry["signature"] || "Central Command"
+				st_send_fax("cc", subject, text, sign)
+			if("fax_syndicate")
+				var/subject2 = entry["subject"] || (title || "Сообщение Синдиката")
+				var/sign2    = entry["signature"] || "Syndicate"
+				st_send_fax("syndicate", subject2, text, sign2)
+			else
+				// неизвестный канал — просто широковещалка под его же названием
+				st_broadcast_announce(channel, text, title, TRUE, force)
