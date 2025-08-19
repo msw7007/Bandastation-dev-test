@@ -297,7 +297,8 @@
 		return
 
 	for(var/entry in announcements)
-		if(!islist(entry)) continue
+		if(!islist(entry))
+			continue
 
 		var/channel = lowertext(entry["channel"] || "announce")
 		var/title   = entry["title"] || null
