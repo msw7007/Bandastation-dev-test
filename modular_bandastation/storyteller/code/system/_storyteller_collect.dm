@@ -44,7 +44,7 @@
 	state["players_alive"] = get_active_player_count(afk_check = TRUE)
 
 	// Распределение по отделам
-	state["departments"] = get_department_data(5 MINUTES)
+	state["departments"] = get_department_data()
 
 	// Хаос
 	// Смертность
@@ -229,12 +229,12 @@
 
 		var/list/info = list(
 			"ckey" = A.owner.key,
-			"role" = A.name,                 // тип антага (напр., Changeling / Traitor)
-			"job" = assigned,                // цивильная роль игрока
-			"department" = department,       // департамент
+			"role" = A.name,
+			"job" = assigned,
+			"department" = department,
 			"is_alive" = is_alive,
-			"status" = status,               // alive / crit / dead
-			"objectives" = objectives        // список текстовых целей
+			"status" = status,
+			"objectives" = objectives
 		)
 
 		entries += list(info)
