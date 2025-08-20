@@ -1,4 +1,7 @@
 #include "code/system/_storyteller.dm"
+#include "code/system/_storyteller_helpers.dm"
+#include "code/system/_storyteller_profiles.dm"
+#include "code/system/_storyteller_llm.dm"
 #include "code/system/_storyteller_collect.dm"
 #include "code/system/_storyteller_response.dm"
 

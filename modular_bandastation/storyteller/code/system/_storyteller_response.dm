@@ -326,3 +326,8 @@
 			else
 				// неизвестный канал — просто широковещалка под его же названием
 				st_broadcast_announce(channel, text, title, TRUE, force)
+
+/datum/controller/subsystem/storyteller/proc/add_custom_goal(goal)
+	if(!islist(goal))
+		return
+	custom_storyteller_goals += list(goal)
