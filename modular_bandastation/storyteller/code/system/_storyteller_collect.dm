@@ -1,3 +1,87 @@
+#define STORYTELLER_CHAOS_DEATH 8
+#define STORYTELLER_CHAOS_VIOLENCE 40
+#define STORYTELLER_CHAOS_ALARMS 12
+#define STORYTELLER_CHAOS_REFRESH 120
+#define STORYTELLER_CHAOS_HISTORY_LIMIT 30
+#define STORYTELLER_CHAOS_ALPHA 0.3
+
+/datum/controller/subsystem/storyteller/proc/smooth_chaos(var/raw_score)
+	var/prev = chaos_cache?["smooth"] || 0
+	var/new_record  = round((1 - STORYTELLER_CHAOS_ALPHA) * prev + STORYTELLER_CHAOS_ALPHA * raw_score, 0.1)
+	return clamp(new_record, 0, 100)
+
+/datum/controller/subsystem/storyteller/proc/get_chaos_cached(var/list/payload, var/force = FALSE)
+	if (force || world.time - last_chaos_calc >= STORYTELLER_CHAOS_REFRESH SECONDS)
+		var/list/raw = compute_raw_chaos(payload)                  // <— твоя функция
+		var/raw_score = islist(raw) ? (raw["score"] || 0) : (raw+0)
+		var/new_smooth = smooth_chaos(raw_score)
+
+		chaos_cache["raw"] = raw_score
+		chaos_cache["smooth"] = new_smooth
+		chaos_cache["parts"] = islist(raw) ? (raw["parts"] || list()) : list()
+		chaos_cache["ts"] = world.time
+		last_chaos_calc = world.time
+
+		chaos_history += list(list("ts" = world.time, "score" = new_smooth))
+		if (chaos_history.len > STORYTELLER_CHAOS_HISTORY_LIMIT)
+			chaos_history.Cut(1, chaos_history.len - STORYTELLER_CHAOS_HISTORY_LIMIT + 1)
+
+	return chaos_cache
+
+/datum/controller/subsystem/storyteller/proc/compute_raw_chaos(var/list/payload)
+	var/list/state = payload?["state"] || list()
+	var/list/players = payload?["players"] || list()
+	var/list/antags = payload?["antags"] || list()
+
+	var/players_alive = state?["players_alive"] || 0
+	var/pop = max(players_alive, 1)
+
+	var/deaths_recent = state?["deaths_recent"] || 0
+	var/violence_raw  = state?["violence_score"] || 0
+	var/air_alarms    = state?["air_alarms"] || 0
+	var/alert_level   = "[state?["alert_level"]]"
+
+	var/crit_count = 0
+	if (islist(players))
+		for (var/list/P in players)
+			if (P?["status"] == "crit")
+				crit_count++
+
+	var/antag_alive = 0
+	if (islist(antags?["list"]))
+		for (var/list/A in antags["list"])
+			if (A?["is_alive"]) antag_alive++
+
+	var/s_deaths   = clamp(deaths_recent * STORYTELLER_CHAOS_DEATH, 0, 100)                     	// 1 смерть за 5 мин ≈ +12
+	var/s_violence = clamp((violence_raw / (pop * STORYTELLER_CHAOS_VIOLENCE)) * 100.0, 0, 100)  	// ~40 HP дефицита на живого = потолок
+	var/s_alarms   = clamp(air_alarms * STORYTELLER_CHAOS_ALARMS, 0, 100)                         	// 12–13 тревог ≈ потолок
+	var/s_alert    = (alert_level == "red") ? 25 : (alert_level == "blue") ? 10 : 0
+	var/s_crit     = clamp((crit_count / pop) * 100.0, 0, 100)             							// 10% экипажа в крите → +10
+	var/s_antag    = clamp((antag_alive / pop) * 100.0, 0, 100)            							// доля живых антагов (вклад ниже весом)
+
+	var/w_deaths   = 0.30
+	var/w_violence = 0.30
+	var/w_alarms   = 0.15
+	var/w_alert    = 0.10
+	var/w_crit     = 0.10
+	var/w_antag    = 0.05
+
+	var/raw = (s_deaths * w_deaths)	+ (s_violence * w_violence)	+ (s_alarms * w_alarms)	+ (s_alert * w_alert) + (s_crit * w_crit) + (s_antag * w_antag)
+	raw = clamp(round(raw, 0.1), 0, 100)
+
+	return list(
+		"score" = raw,
+		"parts" = list(
+			"deaths_recent" = s_deaths,
+			"violence"      = s_violence,
+			"air_alarms"    = s_alarms,
+			"alert_level"   = s_alert,
+			"crit_ratio"    = s_crit,
+			"antag_ratio"   = s_antag,
+			"pop_alive"     = players_alive
+		)
+	)
+
 /datum/controller/subsystem/storyteller/proc/collect_full_storyteller_data(is_roundstart = FALSE)
 	var/list/storyteller_data = list()
 

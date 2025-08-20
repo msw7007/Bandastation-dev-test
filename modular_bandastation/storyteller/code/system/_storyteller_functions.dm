@@ -42,14 +42,6 @@ SUBSYSTEM_DEF(storyteller)
 	// Данные с анонсами
 	var/last_cc_announce = 0
 	var/last_syndi_announce = 0
-	var/last_chaos_calc = 0
-	var/list/chaos_history = list()
-	var/list/chaos_cache = list(
-		"raw" = 0,
-		"smooth" = 0,
-		"parts" = list(),
-		"ts" = 0
-	)
 
 /datum/controller/subsystem/storyteller/proc/log_storyteller(text, list/data)
 	logger.Log(LOG_CATEGORY_STORYTELLER, text, data)

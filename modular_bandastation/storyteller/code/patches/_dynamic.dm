@@ -33,9 +33,7 @@
 	var/num_real_players = is_roundstart ? length(antag_candidates) : population
 	var/tier = SSdynamic.pick_tier(num_real_players)
 
-	var/list/types_to_scan = is_roundstart
-		? subtypesof(/datum/dynamic_ruleset/roundstart)
-		: (subtypesof(/datum/dynamic_ruleset/midround) + subtypesof(/datum/dynamic_ruleset/latejoin))
+	var/list/types_to_scan = is_roundstart ? subtypesof(/datum/dynamic_ruleset/roundstart) : (subtypesof(/datum/dynamic_ruleset/midround) + subtypesof(/datum/dynamic_ruleset/latejoin))
 
 	for(var/ruleset_type in types_to_scan)
 		var/datum/dynamic_ruleset/R = new ruleset_type(dynamic_config)
