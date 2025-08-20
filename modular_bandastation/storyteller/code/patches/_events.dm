@@ -66,4 +66,4 @@
 	if (. == EVENT_READY && SSstoryteller.is_active())
 		if (event_to_trigger.type in event_weights)
 			event_weights[event_to_trigger.type] = max(event_weights[event_to_trigger.type] / 5, 1)
-		log_storyteller("Storyteller activate event: [name].")
+		SSstoryteller.log_storyteller("Storyteller activate event: [name].")

@@ -69,4 +69,4 @@
 /datum/dynamic_ruleset/execute()
 	. = ..()
 	if(SSstoryteller.is_active())
-		log_storyteller("Storyteller activate ruleset: [name].")
+		SSstoryteller.log_storyteller("Storyteller activate ruleset: [name].")
