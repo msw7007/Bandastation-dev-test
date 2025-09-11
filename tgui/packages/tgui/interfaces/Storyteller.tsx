@@ -664,6 +664,36 @@ const SettingsTab: React.FC<{
           </Button>
         </Box>
       </Section>
+
+      {/* Глобалки (если используешь update_globals на бэке) */}
+      <Section title="Storyteller globals">
+        <Stack>
+          <Stack.Item grow>
+            <LabeledList>
+              <LabeledList.Item label="Default cooldown (sec)">
+                <NumberInput
+                  value={gl.cooldown_default_sec ?? 300}
+                  minValue={0}
+                  maxValue={7200}
+                  step={10}
+                  onChange={(v) =>
+                    setGl((s) => ({ ...s, cooldown_default_sec: v }))
+                  }
+                />
+              </LabeledList.Item>
+            </LabeledList>
+          </Stack.Item>
+        </Stack>
+
+        <Box mt={1}>
+          <Button
+            icon="save"
+            onClick={() => act('update_globals', { changes: gl })}
+          >
+            Save globals
+          </Button>
+        </Box>
+      </Section>
     </>
   );
 };

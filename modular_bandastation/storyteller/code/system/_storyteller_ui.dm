@@ -189,6 +189,8 @@ ADMIN_VERB(storyteller_panel, R_FUN, "Storyteller (Panel)", "Open Storyteller co
 		hist = hist.Copy(cnt - 49, cnt + 1)
 	data["history"] = hist
 
+	data["globals"] = list("cooldown_default_sec" = SSstoryteller.storytell_llm_frequency)
+
 	return data
 
 // Экшены с панели (сигнатура как в force_event)
@@ -277,6 +279,19 @@ ADMIN_VERB(storyteller_panel, R_FUN, "Storyteller (Panel)", "Open Storyteller co
 
 			message_admins("[key_name_admin(usr)] updated Storyteller profile settings.")
 			// Чтобы UI сразу увидел изменения бюджета/хаоса:
+			SSstoryteller.update_cached_state(FALSE)
+			SSstoryteller.get_chaos_cached(TRUE)
+			return TRUE
+
+		if("update_globals")
+			var/list/changes = params?["changes"]
+			if(!islist(changes)) return
+
+			if(!isnull(changes["cooldown_default_sec"]))
+				var/v = text2num(changes["cooldown_default_sec"])
+				if(isnum(v)) SSstoryteller.storytell_llm_frequency = clamp(v, 5, 600)
+
+			message_admins("[key_name_admin(usr)] updated Storyteller global settings.")
 			SSstoryteller.update_cached_state(FALSE)
 			SSstoryteller.get_chaos_cached(TRUE)
 			return TRUE
