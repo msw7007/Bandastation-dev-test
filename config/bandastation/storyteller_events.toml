@@ -2,98 +2,102 @@
 target_roles = ['engineer']
 target_departs = ['engineering']
 tags = ['space', 'destructive', 'mundane']
+chaos_impact = 1
+weight = 5
+cooldown = 600
+no_repeat = true
 
 ["/datum/round_event_control/camera_failure"]
 target_roles = ['engineer']
 target_departs = ['engineering']
 tags = ['communal', 'spooky', 'mundane']
+chaos_impact = 3
 
 ["/datum/round_event_control/aurora_caelus"]
 target_roles = ['scientist']
 target_departs = ['science']
 tags = ['communal', 'positive', 'space', 'mundane']
+chaos_impact = -1
 
 ["/datum/round_event_control/brain_trauma"]
 target_roles = ['doctor']
 target_departs = ['medical']
 tags = ['magical', 'mundane']
+chaos_impact = 1
 
 ["/datum/round_event_control/grid_check"]
 target_roles = ['engineer']
 target_departs = ['engineering']
 tags = ['communal', 'spooky', 'moderate']
+chaos_impact = 2
 
 ["/datum/round_event_control/disease_outbreak"]
 target_roles = ['doctor']
 target_departs = ['medical']
 tags = ['communal', 'external', 'alien', 'magical', 'mundane']
+chaos_impact = 7
 
 ["/datum/round_event_control/electrical_storm"]
 target_roles = ['engineer']
 target_departs = ['engineering']
 tags = ['spooky', 'mundane']
+chaos_impact = 6
 
 ["/datum/round_event_control/fake_virus"]
 target_roles = ['doctor']
 target_departs = ['medical']
 tags = ['mundane']
+chaos_impact = 1
 
 ["/datum/round_event_control/falsealarm"]
 target_roles = ['command']
 target_departs = ['command']
 tags = ['communal', 'mundane']
+chaos_impact = 2
 
 ["/datum/round_event_control/market_crash"]
 target_roles = ['cargo_technician']
 target_departs = ['supply']
 tags = ['communal', 'mundane']
+chaos_impact = 10
 
 ["/datum/round_event_control/mice_migration"]
 target_roles = ['janitor']
 target_departs = ['service']
 tags = ['destructive', 'alien', 'mundane']
+chaos_impact = 5
 
 ["/datum/round_event_control/wisdomcow"]
 target_roles = ['chef']
 target_departs = ['service']
 tags = ['communal', 'positive', 'magical', 'mundane']
+chaos_impact = -1
 
 ["/datum/round_event_control/shuttle_loan"]
 target_roles = ['captain']
 target_departs = ['command']
 tags = ['communal', 'mundane']
+chaos_impact = 3
 
 ["/datum/round_event_control/stray_cargo"]
 target_roles = ['cargo_technician']
 target_departs = ['supply']
 tags = ['communal', 'mundane']
+chaos_impact = 5
 
 ["/datum/round_event_control/tram_malfunction"]
 target_roles = ['engineer']
 target_departs = ['engineering']
 tags = ['communal', 'mundane']
+chaos_impact = 10
 
 ["/datum/round_event_control/bitrunning_glitch"]
 target_roles = ['scientist']
 target_departs = ['science']
 tags = ['targeted', 'mundane']
+chaos_impact = 1
 
 ["/datum/round_event_control/easter"]
-target_roles = ['chef']
-target_departs = ['service']
-tags = ['communal', 'positive', 'mundane']
-
-["/datum/round_event_control/rabbitrelease"]
-target_roles = ['chef']
-target_departs = ['service']
-tags = ['communal', 'positive', 'mundane']
-
-["/datum/round_event_control/valentines"]
-target_roles = ['bartender']
-target_departs = ['service']
-tags = ['communal', 'positive', 'mundane']
-
-["/datum/round_event_control/santa"]
 target_roles = ['chef']
 target_departs = ['service']
 tags = ['communal', 'positive', 'mundane']
@@ -102,13 +106,16 @@ tags = ['communal', 'positive', 'mundane']
 target_roles = ['chaplain']
 target_departs = ['service']
 tags = ['communal', 'positive', 'spooky', 'mundane']
+chaos_impact = 1
 
 ["/datum/round_event_control/mass_hallucination"]
 target_roles = ['doctor']
 target_departs = ['medical']
 tags = ['communal', 'magical', 'mundane']
+chaos_impact = 5
 
 ["/datum/round_event_control/sentience"]
 target_roles = ['scientist']
 target_departs = ['science']
 tags = ['communal', 'spooky', 'magical', 'mundane']
+chaos_impact = 3

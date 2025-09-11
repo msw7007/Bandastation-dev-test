@@ -50,17 +50,23 @@
 			qdel(R)
 			continue
 
-		var/list/meta = SSstoryteller.get_event_metadata("[R.type]") || list()
-
-		available += list(list(
+		var/list/base = list(
 			"id" = "[R.type]",
 			"name" = R.name,
 			"weight" = round(ruleset_weight, 0.1),
 			"target_roles" = "any",
 			"tags" = "none",
 			"type" = "ruleset",
-			"phase" = is_roundstart ? "roundstart" : "mid_or_late"
-		) + meta)
+			"phase" = is_roundstart ? "roundstart" : "mid_or_late",
+			"chaos_impact" = 1,
+			"cooldown" = 600,
+			"no_repeat" = FALSE
+		)
+
+		var/list/meta = SSstoryteller.get_event_metadata("[R.type]") || list()
+		var/list/item = base + meta
+
+		available += list(item)
 
 		qdel(R)
 

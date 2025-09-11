@@ -231,6 +231,8 @@ GLOBAL_LIST_INIT(achievements_unlocked, list())
 		HandleRandomHardcoreScore(C)
 
 	var/popcount = gather_roundend_feedback()
+	if(SSstoryteller?.is_active())
+		SSstoryteller.finalize_end_of_round()
 	display_report(popcount)
 
 	CHECK_TICK
@@ -316,7 +318,8 @@ GLOBAL_LIST_INIT(achievements_unlocked, list())
 
 	//Antagonists
 	parts += antag_report()
-
+	if(SSstoryteller?.is_active() && length(GLOB.storyteller_report))
+		parts += GLOB.storyteller_report
 	parts += hardcore_random_report()
 
 	CHECK_TICK

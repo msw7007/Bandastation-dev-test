@@ -40,7 +40,9 @@
 			event_weights[E.type] = max(E.weight, 1)
 
 		var/max_weight = max(E.weight, 1) * 1.25
-		event_weights[E.type] = min(event_weights[E.type] * 1.05, max_weight)
+		var/curent_weight = event_weights[E.type]
+		var/new_weight = curent_weight * 1.05
+		event_weights[E.type] = min(new_weight, max_weight)
 
 		var/list/base = list(
 			"id" = "[E.type]",
@@ -50,7 +52,10 @@
 			"target_departs" = "engineering",
 			"tags" = "none",
 			"type" = "event",
-			"phase" = is_roundstart ? "roundstart" : "mid_or_late"
+			"phase" = is_roundstart ? "roundstart" : "mid_or_late",
+			"chaos_impact" = 1,
+			"cooldown" = 300,
+			"no_repeat" = FALSE
 		)
 
 		var/list/meta = SSstoryteller.get_event_metadata("[E.type]") || list()
@@ -65,5 +70,5 @@
 
 	if (. == EVENT_READY && SSstoryteller.is_active())
 		if (event_to_trigger.type in event_weights)
-			event_weights[event_to_trigger.type] = max(event_weights[event_to_trigger.type] / 5, 1)
+			event_weights[event_to_trigger.type] = max(event_weights[event_to_trigger.type] / 10, 1)
 		SSstoryteller.log_storyteller("Storyteller activate event: [name].")

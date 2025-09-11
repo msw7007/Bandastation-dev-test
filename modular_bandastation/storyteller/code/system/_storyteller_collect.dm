@@ -5,14 +5,124 @@
 #define STORYTELLER_CHAOS_HISTORY_LIMIT 30
 #define STORYTELLER_CHAOS_ALPHA 0.3
 
+// Внутри /datum/controller/subsystem/storyteller
+var/list/chaos_injections = list() // key=id (строка), value=list("until"=ts, "value"=число)
+
+/datum/controller/subsystem/storyteller/proc/add_chaos_injection(id, value = 5, duration = 5 MINUTES)
+	if(!istext(id) || !length(id)) return
+	if(value <= 0 || duration <= 0) return
+	chaos_injections[id] = list("until" = world.time + duration, "value" = value)
+	log_storyteller("Chaos injection: [id] +[value] for [round(duration/10)]ds")
+
+/datum/controller/subsystem/storyteller/proc/get_active_chaos_injection_sum()
+	var/sum = 0
+	if(!islist(chaos_injections) || !chaos_injections.len) return sum
+
+	// очистим истёкшие и просуммируем активные
+	for(var/id in chaos_injections.Copy())
+		var/list/ent = chaos_injections[id]
+		if(!islist(ent)) { chaos_injections -= id; continue }
+		if(world.time >= (ent["until"] || 0))
+			chaos_injections -= id
+		else
+			sum += max(0, ent["value"] || 0)
+	return sum
+
 /datum/controller/subsystem/storyteller/proc/smooth_chaos(var/raw_score)
 	var/prev = chaos_cache?["smooth"] || 0
 	var/new_record  = round((1 - STORYTELLER_CHAOS_ALPHA) * prev + STORYTELLER_CHAOS_ALPHA * raw_score, 0.1)
 	return clamp(new_record, 0, 100)
 
-/datum/controller/subsystem/storyteller/proc/get_chaos_cached(var/list/payload, var/force = FALSE)
-	if (force || world.time - last_chaos_calc >= STORYTELLER_CHAOS_REFRESH SECONDS)
-		var/list/raw = compute_raw_chaos(payload)                  // <— твоя функция
+/datum/controller/subsystem/storyteller/proc/get_round_time_marks()
+	var/minutes = world.time / (1 MINUTES)
+	var/hours   = minutes / 60
+	return list("minutes" = minutes, "hours" = hours)
+
+/// Линейная интерполяция между предыдущим и текущим шагом массива с шагом 10 минут
+/// series: list чисел (длина N, N>=1). Каждый элемент — значение для 10-минутного окна.
+/// minute_now: текущая минута раунда (целое/вещественное).
+/datum/controller/subsystem/storyteller/proc/interp_step10_series(list/series, minute_now)
+	if(!islist(series) || !series.len)
+		return 0
+
+	var/N = series.len
+	var/period_minutes = N * 10
+	// минутная позиция внутри периода
+	var/min_in_period = minute_now % period_minutes
+
+	// индекс текущего 10-минутного шага (0..N-1), floor без дроби
+	var/ten = 10
+	var/whole = min_in_period - (min_in_period % ten) // убрали остаток
+	var/b = whole / ten                     // текущий шаг
+	var/p = (b - 1 + N) % N                // предыдущий шаг (с обёрткой)
+
+	// доля прогресса внутри текущего шага (0..1)
+	var/f = (min_in_period % ten) / 10.0
+
+	// значения в шагах
+	var/val_prev = series[p + 1]
+	var/val_curr = series[b + 1]
+
+	// линейная интерполяция между prev→curr
+	return val_prev + (val_curr - val_prev) * f
+
+/// Главный расчёт: целевой хаос и бюджет
+/// Возвращает:
+///  - target_base       — интерполированная кривая без разброса/множителя
+///  - scatter_now       — интерполированный разброс (абсолютный)
+///  - rand_offset       — случайное число в [-scatter; +scatter]
+///  - cycle_mult        — множитель по часам
+///  - target_final      — clamp( (target_base + rand_offset) * cycle_mult, 0..100 )
+///  - current           — сглаженный текущий хаос (из кэша)
+///  - budget            — target_final - current
+///  - minutes, hours    — удобные метки
+/datum/controller/subsystem/storyteller/proc/compute_target_chaos_and_budget()
+	var/datum/storyteller_profile/P = get_current_profile_datum()
+	if(!P) return null
+
+	// метки времени раунда
+	var/list/T = get_round_time_marks()
+	var/minutes = T["minutes"]
+	var/hours   = T["hours"]
+
+	// интерполированный таргет по кривой (10-минутные шаги)
+	var/target_base = interp_step10_series(P.chaos_curve, minutes)
+
+	// интерполированный разброс (абсолютные значения!)
+	var/scatter_now = 0
+	if(P.chaos_scatter_pct && P.chaos_scatter_pct.len) // имя поля оставляем, семантика — абсолют
+		scatter_now = max(0, interp_step10_series(P.chaos_scatter_pct, minutes))
+
+	// случайный оффсет в диапазоне [-scatter; +scatter]
+	var/rand_offset = (rand(-1000, 1000) / 1000.0) * scatter_now
+
+	// цикловой множитель: берём по номеру часа, иначе последний
+	var/cycle_mult = 1.0
+	if(P.chaos_cycle_multipliers && P.chaos_cycle_multipliers.len)
+		var/idx = min(hours + 1, P.chaos_cycle_multipliers.len)
+		cycle_mult = P.chaos_cycle_multipliers[idx]
+
+	// итоговая цель и бюджет
+	var/target_final = clamp( (target_base + rand_offset) * cycle_mult, 0, 100)
+	var/current = chaos_cache?["smooth"] || 0
+	var/budget  = target_final - current
+
+	return list(
+		"minutes"       = minutes,
+		"hours"         = hours,
+		"target_base"   = round(target_base, 0.1),
+		"scatter_now"   = round(scatter_now, 0.1),
+		"rand_offset"   = round(rand_offset, 0.1),
+		"cycle_mult"    = cycle_mult,
+		"target_final"  = round(target_final, 0.1),
+		"current"       = round(current, 0.1),
+		"budget"        = round(budget, 0.1)
+	)
+
+/datum/controller/subsystem/storyteller/proc/get_chaos_cached(var/force = FALSE)
+	var/pause_timer = STORYTELLER_CHAOS_REFRESH SECONDS
+	if (force || (world.time - last_chaos_calc >= pause_timer))
+		var/list/raw = compute_raw_chaos(cached_state)                  // <— твоя функция
 		var/raw_score = islist(raw) ? (raw["score"] || 0) : (raw+0)
 		var/new_smooth = smooth_chaos(raw_score)
 
@@ -53,7 +163,7 @@
 			if (A?["is_alive"]) antag_alive++
 
 	var/s_deaths   = clamp(deaths_recent * STORYTELLER_CHAOS_DEATH, 0, 100)                     	// 1 смерть за 5 мин ≈ +12
-	var/s_violence = clamp((violence_raw / (pop * STORYTELLER_CHAOS_VIOLENCE)) * 100.0, 0, 100)  	// ~40 HP дефицита на живого = потолок
+	var/s_violence = clamp(((violence_raw / pop) * STORYTELLER_CHAOS_VIOLENCE) * 100.0, 0, 100)  	// ~40 HP дефицита на живого = потолок
 	var/s_alarms   = clamp(air_alarms * STORYTELLER_CHAOS_ALARMS, 0, 100)                         	// 12–13 тревог ≈ потолок
 	var/s_alert    = (alert_level == "red") ? 25 : (alert_level == "blue") ? 10 : 0
 	var/s_crit     = clamp((crit_count / pop) * 100.0, 0, 100)             							// 10% экипажа в крите → +10
@@ -64,10 +174,14 @@
 	var/w_alarms   = 0.15
 	var/w_alert    = 0.10
 	var/w_crit     = 0.10
-	var/w_antag    = 0.05
+	var/w_antag    = 0.50
 
 	var/raw = (s_deaths * w_deaths)	+ (s_violence * w_violence)	+ (s_alarms * w_alarms)	+ (s_alert * w_alert) + (s_crit * w_crit) + (s_antag * w_antag)
 	raw = clamp(round(raw, 0.1), 0, 100)
+
+	var/inj = get_active_chaos_injection_sum()
+	if(inj > 0)
+		raw = clamp(raw + min(20, inj), 0, 100)
 
 	return list(
 		"score" = raw,
@@ -183,7 +297,7 @@
 /datum/controller/subsystem/storyteller/proc/count_violence_score()
 	var/violence_score = 0
 
-	for(var/mob/living/carbon/human/H in GLOB.human_list)
+	for(var/mob/living/carbon/human/H in GLOB.player_list)
 		// Проверяем, получал ли урон недавно
 		violence_score += max(0, H.maxHealth - H.health)
 
@@ -207,49 +321,67 @@
 /datum/controller/subsystem/storyteller/proc/get_department_data()
 	var/list/dept_summary = list()
 
-	for(var/mob/living/carbon/human/H in GLOB.player_list)
-		if(!H.client || !H.mind || !H.mind.assigned_role)
+	for (var/mob/living/carbon/human/H in GLOB.player_list)
+		if (!H?.client || !H?.mind || !H.mind.assigned_role)
 			continue
 
-		// Определяем отдел (надо будет иметь маппинг ролей → отделов)
-		var/role = H.mind.assigned_role
-		var/department = map_role_to_department(role)
-		if(!department)
-			department = "Other"
+		// 1) определить отдел (fallback -> "Other")
+		var/department = map_role_to_department(H.mind.assigned_role)
 
-		// Часы наигранные (берём из client.prefs)
+		// 2) лениво создать запись для отдела
+		if (!islist(dept_summary[department]))
+			dept_summary[department] = list(
+				"players" = 0,
+				"avg_exp" = 0
+			)
+
+		var/list/D = dept_summary[department]
+
+		// 3) опыт (часы) -> прогресс 0..1
 		var/hours = 0
-		hours = H.client?.calc_exp_type(H.mind.assigned_role)
-		// Приводим к 0..1 (0 – новичок, 1 – ветеран)
+		var/tmp_hours = H.client?.calc_exp_type(H.mind.assigned_role)
+		if (isnum(tmp_hours)) hours = tmp_hours
 		var/progress = clamp(hours / 300, 0, 1)
 
-		if(!dept_summary[department])
-			dept_summary[department] = list("players" = 0, "avg_exp" = 0)
+		// 4) инкременты
+		D["players"] = (D["players"] || 0) + 1
+		D["avg_exp"] = (D["avg_exp"] || 0) + progress
 
-		dept_summary[department]["players"] += 1
-		dept_summary[department]["avg_exp"] += progress
-
-	// Делаем среднее по опыту
-	for(var/dept in dept_summary)
-		var/count = dept_summary[dept]["players"]
-		if(count > 0)
-			dept_summary[dept]["avg_exp"] = dept_summary[dept]["avg_exp"] / count
+	// 5) финализация: среднее и опционально "strength"
+	for (var/dept in dept_summary)
+		var/list/D = dept_summary[dept]
+		var/count = D["players"] || 0
+		if (count > 0)
+			D["avg_exp"] = D["avg_exp"] / count
+		// strength = 0..100, можно подстроить формулу под свои нужды
+		D["avg_exp"] = round((D["avg_exp"] || 0) * 100)
 
 	return dept_summary
 
 /datum/controller/subsystem/storyteller/proc/map_role_to_department(role)
-	// Простая заглушка (нужен маппинг)
-	if(findtext(role, "Engineer"))
-		return "Engineering"
-	if(findtext(role, "Medical"))
+	var/datum/job/J = null
+	if (istype(role, /datum/job))
+		J = role
+	else if (istype(role, /datum/mind))
+		J = SSjob.get_job(role)
+
+	if (!J)
+		return "Other"
+
+	var/flags = J.departments_bitflags
+	if (flags & DEPARTMENT_BITFLAG_MEDICAL)
 		return "Medical"
-	if(findtext(role, "Security"))
+	if (flags & DEPARTMENT_BITFLAG_ENGINEERING)
+		return "Engineering"
+	if (flags & DEPARTMENT_BITFLAG_SECURITY)
 		return "Security"
-	if(findtext(role, "Cargo"))
-		return "Supply"
-	if(findtext(role, "Science"))
+	if (flags & DEPARTMENT_BITFLAG_SCIENCE)
 		return "Science"
-	if(findtext(role, "Command"))
+	if (flags & DEPARTMENT_BITFLAG_CARGO)
+		return "Supply"
+	if (flags & DEPARTMENT_BITFLAG_SERVICE)
+		return "Service"
+	if (flags & DEPARTMENT_BITFLAG_COMMAND)
 		return "Command"
 	return "Civilian"
 

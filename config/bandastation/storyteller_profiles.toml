@@ -2,14 +2,19 @@
 name = "Боевой Сторителлер"
 frequency = 30
 description = "Агрессивный Сторителлер, предпочитает конфликты, бойни и разрушения."
-attention_tags = ["combat", "destructive", "invasion"]
+attention_tags = ["combat", "destructive", "invasion:1.5"]
 ignore_tags = ["positive", "mundane"]
 preferred_targets = ["security", "engineering"]
-allow_manual = true
 allow_auto = false
 chaos_curve = [20, 20, 40, 40, 30, 10]
 chaos_delta = [5, 10, 2, 40, 20, 10]
 chaos_mult = [1, 0.75]
+deadband = 6
+min_gap_sec = 180
+drop_shape = 1.25
+allow_force_pick = false
+assist_window = 4
+assist_prob = 40
 
 ["science_storyteller"]
 name = "Научный Сторителлер"
@@ -17,8 +22,12 @@ frequency = 30
 description = "Наблюдает за станцией и бросает научные вызовы: аномалии, мутации и запредельные технологии."
 attention_tags = ["magical", "alien", "external"]
 preferred_targets = ["science", "medical"]
-allow_manual = false
 allow_auto = true
+phase_plan = [
+  { title = "Старт", duration_min = 10 },
+  { title = "Эскалация", duration_min = 20, description = "Ужасный метео-шторм", pool = ["/datum/round_event_control/meteor_wave/meaty", "/datum/round_event_control/meteor_wave/catastrophic"] },
+  { title = "Финал", duration_min = 15, description = "Станция входит в зону повышенной радиации", pool = ["/datum/round_event_control/meteor_wave/radiation_storm"] }
+]
 
 ["balanced_storyteller"]
 name = "Сбалансированный Сторителлер"
@@ -26,5 +35,4 @@ frequency = 30
 description = "Поддерживает баланс между хаосом и порядком, кидает разнообразные испытания."
 attention_tags = ["communal", "space", "combat"]
 preferred_targets = ["all"]
-allow_manual = true
 allow_auto = true
