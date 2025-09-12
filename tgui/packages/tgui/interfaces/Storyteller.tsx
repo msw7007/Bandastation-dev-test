@@ -10,6 +10,7 @@ import {
   Stack,
   Table,
   Tabs,
+  TextArea,
 } from 'tgui-core/components';
 
 import { useBackend } from '../backend';
@@ -109,6 +110,7 @@ type Data = {
   raw_state?: any;
   cached_state?: any;
 
+  phase_plan?: any[];
   phase?: PhaseInfo;
   phase_total?: number;
 
@@ -336,30 +338,6 @@ const MetricsTab: React.FC<{
         </Stack>
       </Section>
 
-      <Section title="Profiles">
-        <FixedScroll h="20rem" px={1}>
-          <Stack wrap>
-            {(selectableProfiles.length
-              ? Object.fromEntries(selectableProfiles)
-              : profiles) &&
-              Object.entries(
-                selectableProfiles.length
-                  ? Object.fromEntries(selectableProfiles)
-                  : profiles,
-              ).map(([id, p]) => (
-                <Stack.Item key={id}>
-                  <ProfileCard
-                    profId={id}
-                    p={p}
-                    active={profile.id === id || profile.name === p?.name}
-                    onUse={() => act('set_profile', { id })}
-                  />
-                </Stack.Item>
-              ))}
-          </Stack>
-        </FixedScroll>
-      </Section>
-
       <Section
         title="Available candidates"
         buttons={
@@ -503,17 +481,225 @@ const MetricsTab: React.FC<{
   );
 };
 
+type PhaseRow = {
+  title?: string;
+  description?: string;
+  duration_min?: number;
+  pool?: string[]; // список id
+};
+
+const PhasePlanEditor: React.FC<{
+  plan: PhaseRow[];
+  act: (action: string, params?: any) => void;
+  catalog?: {
+    events?: Record<string, string>;
+    rulesets?: Record<string, string>;
+  }; // опционально
+}> = ({ plan, act, catalog }) => {
+  // локальные поля для добавления ID в пул (по одному инпуту на фазу)
+  const [addInputs, setAddInputs] = React.useState<Record<number, string>>({});
+
+  const getName = (id: string) => {
+    const nm =
+      (catalog?.events && catalog.events[id]) ||
+      (catalog?.rulesets && catalog.rulesets[id]);
+    return nm ? `${id} — ${nm}` : id;
+  };
+
+  return (
+    <Section
+      title={`Phase plan — ${plan?.length || 0} phases`}
+      buttons={
+        <Button icon="plus" onClick={() => act('phase_add')}>
+          Add phase
+        </Button>
+      }
+    >
+      {(!Array.isArray(plan) || plan.length === 0) && (
+        <Box color="label">No phases yet.</Box>
+      )}
+
+      {Array.isArray(plan) &&
+        plan.map((ph, i) => {
+          const idx = i + 1;
+          const pool = Array.isArray(ph?.pool) ? (ph.pool as string[]) : [];
+          const addVal = addInputs[idx] || '';
+
+          return (
+            <Section
+              key={`phase-${idx}`}
+              title={`#${idx} — ${ph?.title || 'Untitled phase'}`}
+              buttons={
+                <>
+                  <Button
+                    icon="arrow-up"
+                    disabled={i === 0}
+                    tooltip="Move up"
+                    onClick={() =>
+                      act('phase_reorder', { index: idx, new_index: i })
+                    }
+                  />
+                  <Button
+                    icon="arrow-down"
+                    disabled={i === plan.length - 1}
+                    tooltip="Move down"
+                    onClick={() =>
+                      act('phase_reorder', { index: idx, new_index: i + 2 })
+                    }
+                  />
+                  <Button.Confirm
+                    icon="trash"
+                    color="bad"
+                    tooltip="Delete phase"
+                    onClick={() => act('phase_delete', { index: idx })}
+                  >
+                    Delete
+                  </Button.Confirm>
+                </>
+              }
+            >
+              {/* Основные поля фазы */}
+              <Stack>
+                <Stack.Item grow>
+                  <LabeledList>
+                    <LabeledList.Item label="Title">
+                      <TextArea
+                        value={ph?.title || ''}
+                        onChange={(v: string) =>
+                          act('phase_update', {
+                            index: idx,
+                            changes: { title: v },
+                          })
+                        }
+                      />
+                    </LabeledList.Item>
+
+                    <LabeledList.Item label="Description">
+                      <TextArea
+                        value={ph?.description || ''}
+                        onChange={(v: string) =>
+                          act('phase_update', {
+                            index: idx,
+                            changes: { description: v },
+                          })
+                        }
+                      />
+                    </LabeledList.Item>
+                  </LabeledList>
+                </Stack.Item>
+
+                <Stack.Item basis="20rem">
+                  <LabeledList>
+                    <LabeledList.Item label="Duration (min)">
+                      <NumberInput
+                        value={ph?.duration_min ?? 0}
+                        minValue={0}
+                        maxValue={180}
+                        step={5}
+                        onChange={(v) =>
+                          act('phase_update', {
+                            index: idx,
+                            changes: { duration_min: v },
+                          })
+                        }
+                      />
+                    </LabeledList.Item>
+                    <LabeledList.Item label="Pool size">
+                      {pool.length}
+                    </LabeledList.Item>
+                  </LabeledList>
+                </Stack.Item>
+              </Stack>
+
+              {/* Пул событий/рулсетов */}
+              <Section title="Pool">
+                {pool.length ? (
+                  <FixedScroll h="12rem">
+                    <Table>
+                      <Table.Row header>
+                        <Table.Cell>ID / Name</Table.Cell>
+                        <Table.Cell collapsing>Action</Table.Cell>
+                      </Table.Row>
+                      {pool.map((id) => (
+                        <Table.Row key={`${idx}-${id}`}>
+                          <Table.Cell>{getName(id)}</Table.Cell>
+                          <Table.Cell collapsing>
+                            <Button
+                              icon="times"
+                              tooltip="Remove from pool"
+                              onClick={() =>
+                                act('phase_pool_remove', { index: idx, id })
+                              }
+                            />
+                          </Table.Cell>
+                        </Table.Row>
+                      ))}
+                    </Table>
+                  </FixedScroll>
+                ) : (
+                  <Box color="label">Pool is empty.</Box>
+                )}
+
+                {/* Добавление нового ID в пул */}
+                <Stack align="center" mt={1}>
+                  <Stack.Item grow>
+                    <TextArea
+                      placeholder="Paste event/ruleset id (e.g. /datum/round_event_control/meteor_wave/meaty)"
+                      value={addVal}
+                      onChange={(v: string) =>
+                        setAddInputs((s) => ({ ...s, [idx]: v }))
+                      }
+                    />
+                  </Stack.Item>
+                  <Stack.Item>
+                    <Button
+                      icon="plus"
+                      disabled={!addVal?.trim()}
+                      onClick={() => {
+                        const id = addVal.trim();
+                        act('phase_pool_add', { index: idx, id });
+                        setAddInputs((s) => ({ ...s, [idx]: '' }));
+                      }}
+                    >
+                      Add to pool
+                    </Button>
+                  </Stack.Item>
+                </Stack>
+
+                {/* Подсказка каталога (если бэк когда-нибудь отдаёт data.catalog) */}
+                {catalog &&
+                (Object.keys(catalog.events || {}).length ||
+                  Object.keys(catalog.rulesets || {}).length) ? (
+                  <Box color="label" mt={0.5}>
+                    Tip: you can paste an ID from available catalog. (Catalog is
+                    optional and may not be loaded here.)
+                  </Box>
+                ) : null}
+              </Section>
+            </Section>
+          );
+        })}
+    </Section>
+  );
+};
+
 const SettingsTab: React.FC<{
   data: Data;
   act: (action: string, params?: any) => void;
 }> = ({ data, act }) => {
-  const profiles = data.profiles || {};
   const profile = data.profile || {};
+  const profiles = data.profiles || {};
+  const selectableProfiles = useMemo(
+    () =>
+      Object.entries(profiles).filter(
+        ([, p]) => (p?.selectable ?? true) !== false,
+      ),
+    [profiles],
+  );
 
-  // локальный стейт текущих редактируемых значений профиля
+  // локальный стейт редактируемых чисел
   const [pf, setPf] = useState<ProfileDTO>({
     frequency: profile.frequency,
-    allow_auto: profile.allow_auto,
     deadband: profile.deadband,
     min_gap_sec: profile.min_gap_sec,
     drop_shape: profile.drop_shape,
@@ -522,41 +708,34 @@ const SettingsTab: React.FC<{
     allow_force_pick: profile.allow_force_pick,
     dept_weight: profile.dept_weight,
   });
-  const [gl, setGl] = useState<GlobalsDTO>({ ...(data.globals || {}) });
 
-  // список доступных профилей (фильтруем неселектируемые)
-  const selectableEntries = useMemo(
-    () =>
-      Object.entries(profiles).filter(
-        ([, p]) => (p?.selectable ?? true) !== false,
-      ),
-    [profiles],
-  );
+  const [gl, setGl] = useState<GlobalsDTO>({ ...(data.globals || {}) });
 
   return (
     <>
-      {/* Переключатель профиля */}
-      <Section title="Select profile">
-        {selectableEntries.length ? (
+      {/* Переключение профиля */}
+      <Section title="Switch profile">
+        <FixedScroll h="20rem" px={1}>
           <Stack wrap>
-            {selectableEntries.map(([id, p]) => {
-              const isActive = profile.id === id || profile.name === p?.name;
-              return (
-                <Stack.Item key={id} mr={1} mb={1}>
-                  <Button
-                    selected={isActive}
-                    onClick={() => act('set_profile', { id })}
-                    tooltip={p?.description || undefined}
-                  >
-                    {p?.name || id}
-                  </Button>
+            {(selectableProfiles.length
+              ? Object.fromEntries(selectableProfiles)
+              : profiles) &&
+              Object.entries(
+                selectableProfiles.length
+                  ? Object.fromEntries(selectableProfiles)
+                  : profiles,
+              ).map(([id, p]) => (
+                <Stack.Item key={id}>
+                  <ProfileCard
+                    profId={id}
+                    p={p}
+                    active={profile.id === id || profile.name === p?.name}
+                    onUse={() => act('set_profile', { id })}
+                  />
                 </Stack.Item>
-              );
-            })}
+              ))}
           </Stack>
-        ) : (
-          <Box color="label">No selectable profiles</Box>
-        )}
+        </FixedScroll>
       </Section>
 
       {/* Настройки текущего профиля */}
@@ -566,24 +745,22 @@ const SettingsTab: React.FC<{
             <LabeledList>
               <LabeledList.Item label="Frequency (sec)">
                 <NumberInput
-                  value={pf.frequency ?? 60}
+                  value={pf.frequency ?? 30}
                   minValue={5}
                   maxValue={600}
                   step={5}
                   onChange={(v) => setPf((s) => ({ ...s, frequency: v }))}
                 />
               </LabeledList.Item>
-
               <LabeledList.Item label="Deadband">
                 <NumberInput
-                  value={pf.deadband ?? 5}
+                  value={pf.deadband ?? 6}
                   minValue={0}
                   maxValue={50}
                   step={1}
                   onChange={(v) => setPf((s) => ({ ...s, deadband: v }))}
                 />
               </LabeledList.Item>
-
               <LabeledList.Item label="Gap (sec)">
                 <NumberInput
                   value={pf.min_gap_sec ?? 180}
@@ -593,7 +770,11 @@ const SettingsTab: React.FC<{
                   onChange={(v) => setPf((s) => ({ ...s, min_gap_sec: v }))}
                 />
               </LabeledList.Item>
+            </LabeledList>
+          </Stack.Item>
 
+          <Stack.Item grow>
+            <LabeledList>
               <LabeledList.Item label="Drop shape">
                 <NumberInput
                   value={pf.drop_shape ?? 1.0}
@@ -603,11 +784,15 @@ const SettingsTab: React.FC<{
                   onChange={(v) => setPf((s) => ({ ...s, drop_shape: v }))}
                 />
               </LabeledList.Item>
-            </LabeledList>
-          </Stack.Item>
-
-          <Stack.Item grow>
-            <LabeledList>
+              <LabeledList.Item label="Dept weight">
+                <NumberInput
+                  value={pf.dept_weight ?? 0.4}
+                  minValue={0}
+                  maxValue={1}
+                  step={0.05}
+                  onChange={(v) => setPf((s) => ({ ...s, dept_weight: v }))}
+                />
+              </LabeledList.Item>
               <LabeledList.Item label="Force pick allowed">
                 <Button.Checkbox
                   checked={!!pf.allow_force_pick}
@@ -621,7 +806,6 @@ const SettingsTab: React.FC<{
                   Force pick
                 </Button.Checkbox>
               </LabeledList.Item>
-
               <LabeledList.Item label="Assist window">
                 <NumberInput
                   value={pf.assist_window ?? 0}
@@ -631,7 +815,6 @@ const SettingsTab: React.FC<{
                   onChange={(v) => setPf((s) => ({ ...s, assist_window: v }))}
                 />
               </LabeledList.Item>
-
               <LabeledList.Item label="Assist prob (%)">
                 <NumberInput
                   value={pf.assist_prob ?? 0}
@@ -639,16 +822,6 @@ const SettingsTab: React.FC<{
                   maxValue={100}
                   step={5}
                   onChange={(v) => setPf((s) => ({ ...s, assist_prob: v }))}
-                />
-              </LabeledList.Item>
-
-              <LabeledList.Item label="Dept weight">
-                <NumberInput
-                  value={pf.dept_weight ?? 0.4}
-                  minValue={0}
-                  maxValue={1}
-                  step={0.05}
-                  onChange={(v) => setPf((s) => ({ ...s, dept_weight: v }))}
                 />
               </LabeledList.Item>
             </LabeledList>
@@ -665,11 +838,22 @@ const SettingsTab: React.FC<{
         </Box>
       </Section>
 
-      {/* Глобалки (если используешь update_globals на бэке) */}
+      {/* Глобальные параметры */}
       <Section title="Storyteller globals">
         <Stack>
           <Stack.Item grow>
             <LabeledList>
+              <LabeledList.Item label="Smooth window (sec)">
+                <NumberInput
+                  value={gl.smooth_window_sec ?? 120}
+                  minValue={10}
+                  maxValue={1800}
+                  step={10}
+                  onChange={(v) =>
+                    setGl((s) => ({ ...s, smooth_window_sec: v }))
+                  }
+                />
+              </LabeledList.Item>
               <LabeledList.Item label="Default cooldown (sec)">
                 <NumberInput
                   value={gl.cooldown_default_sec ?? 300}
@@ -694,6 +878,13 @@ const SettingsTab: React.FC<{
           </Button>
         </Box>
       </Section>
+
+      {/* Редактор фаз */}
+      <PhasePlanEditor
+        plan={Array.isArray(data.phase_plan) ? (data.phase_plan as any[]) : []}
+        act={act}
+        // catalog={data.catalog} // если позже начнёшь отдавать каталог с бэка
+      />
     </>
   );
 };

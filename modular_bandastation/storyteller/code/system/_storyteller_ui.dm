@@ -40,11 +40,13 @@ ADMIN_VERB(storyteller_panel, R_FUN, "Storyteller (Panel)", "Open Storyteller co
 /datum/storyteller_panel/ui_static_data(mob/user)
 	var/list/data = list()
 	data["inactive"] = !SSstoryteller?.is_active()
-	if(data["inactive"])
+	if (data["inactive"])
 		return data
 
-	// все профили для селектора
 	data["profiles"] = SSstoryteller.get_all_profiles() || list()
+
+	// ВСЕ доступные ID с названиями (без фильтров по популяции; это справочник)
+	data["all_events"] = SSstoryteller.collect_available_events(TRUE) || list()
 	return data
 
 // Живые данные на каждый апдейт
@@ -91,6 +93,8 @@ ADMIN_VERB(storyteller_panel, R_FUN, "Storyteller (Panel)", "Open Storyteller co
 	// Фаза (для компактного блока в UI)
 	var/list/phase = SSstoryteller.get_current_phase_info()
 	var/phase_total = length(SSstoryteller?.story_context || list())
+	data["phase_plan"] = islist(profile?.phase_plan) ? profile.phase_plan.Copy() : list()
+
 	data["phase"] = list(
 		"index" = phase?["index"] || -1,
 		"title" = phase?["title"] || "",
@@ -295,5 +299,84 @@ ADMIN_VERB(storyteller_panel, R_FUN, "Storyteller (Panel)", "Open Storyteller co
 			SSstoryteller.update_cached_state(FALSE)
 			SSstoryteller.get_chaos_cached(TRUE)
 			return TRUE
+
+		// Полностью заменить план (bulk save)
+		if ("phase_set_plan")
+			var/list/new_plan = params["plan"] // ожидаем list фаз [{title=..,duration_min=..,description=.., pool=[...]}]
+			var/datum/storyteller_profile/P = SSstoryteller.get_current_profile_datum()
+			if (istype(P) && islist(new_plan))
+				P.phase_plan = new_plan.Copy()
+				message_admins("[key_name_admin(usr)] updated phase_plan ([length(P.phase_plan)] phases).")
+				return TRUE
+
+		// Добавить пустую фазу в конец
+		if ("phase_add")
+			var/datum/storyteller_profile/P = SSstoryteller.get_current_profile_datum()
+			if (istype(P))
+				if (!islist(P.phase_plan)) P.phase_plan = list()
+				P.phase_plan += list(list("title"="Новая фаза","duration_min"=10,"description"="","pool"=list()))
+				return TRUE
+
+		// Удалить фазу по индексу (1-based)
+		if ("phase_delete")
+			var/idx = text2num(params["index"])
+			var/datum/storyteller_profile/P = SSstoryteller.get_current_profile_datum()
+			if (istype(P) && islist(P.phase_plan) && idx>=1 && idx<=length(P.phase_plan))
+				P.phase_plan.Cut(idx, idx+1)
+				return TRUE
+
+		// Обновить поля фазы по индексу (title/description/duration_min)
+		if ("phase_update")
+			var/idx = text2num(params["index"])
+			var/list/changes = params["changes"]
+			var/datum/storyteller_profile/P = SSstoryteller.get_current_profile_datum()
+			if (istype(P) && islist(P.phase_plan) && idx>=1 && idx<=length(P.phase_plan) && islist(changes))
+				var/list/ph = P.phase_plan[idx]
+				if (changes["title"]) ph["title"] = "[changes["title"]]"
+				if (!isnull(changes["description"])) ph["description"] = "[changes["description"]]"
+				if (!isnull(changes["duration_min"])) ph["duration_min"] = max(0, round(text2num(changes["duration_min"])))
+				return TRUE
+
+		// Добавить id в pool фазы
+		if ("phase_pool_add")
+			var/idx = text2num(params["index"])
+			var/id = params["id"]
+			var/datum/storyteller_profile/P = SSstoryteller.get_current_profile_datum()
+			if (istype(P) && islist(P.phase_plan) && idx>=1 && idx<=length(P.phase_plan) && id)
+				var/list/ph = P.phase_plan[idx]
+				if (!islist(ph["pool"])) ph["pool"] = list()
+				if (!(id in ph["pool"])) ph["pool"] += id
+				return TRUE
+
+		// Удалить id из pool фазы
+		if ("phase_pool_remove")
+			var/idx = text2num(params["index"])
+			var/id = params["id"]
+			var/datum/storyteller_profile/P = SSstoryteller.get_current_profile_datum()
+			if (istype(P) && islist(P.phase_plan) && idx>=1 && idx<=length(P.phase_plan) && id)
+				var/list/ph = P.phase_plan[idx]
+				if (islist(ph["pool"]))
+					ph["pool"] -= id
+				return TRUE
+
+		// Поменять порядок фаз (перемещение idx -> new_idx)
+		if ("phase_reorder")
+			// ожидаем 0-based индексы из UI
+			var/old_idx0 = text2num(params["index"])
+			var/new_idx0 = text2num(params["new_index"])
+			if (!isnum(old_idx0) || !isnum(new_idx0))
+				return
+
+			var/old_pos = old_idx0 + 1 // DM 1-based
+			var/new_pos = new_idx0 + 1
+			var/datum/storyteller_profile/P = SSstoryteller.get_current_profile_datum()
+
+			if (istype(P) && islist(P.phase_plan))
+				var/list/L = P.phase_plan
+				if (old_pos >= 1 && old_pos <= L.len && new_pos >= 1 && new_pos <= L.len && old_pos != new_pos)
+					var/entry = L[old_pos]
+					L.Cut(old_pos, old_pos + 1) // [from, to)
+					L.Insert(new_pos, entry)
+					return TRUE
 
 	return
