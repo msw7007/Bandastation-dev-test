@@ -186,7 +186,7 @@ SUBSYSTEM_DEF(storyteller)
 		decide_and_trigger(FALSE)
 	else
 		goal_monitor_tick()
-		make_request(addition_info = current_storyteller_profile["description"], is_roundstart = FALSE)
+		make_request(is_roundstart = FALSE)
 		check_antagonist_missions()
 
 /// Финализация конца раунда: дожимаем антагов/цели и готовим панель отчёта
